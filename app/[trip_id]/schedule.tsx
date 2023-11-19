@@ -9,13 +9,7 @@ import {
   FlatList,
   Pressable,
 } from "react-native";
-import {
-  Link,
-  Stack,
-  useGlobalSearchParams,
-  useLocalSearchParams,
-  useRouter,
-} from "expo-router";
+import { Link, Stack, useLocalSearchParams, useRouter } from "expo-router";
 
 const timeIntervals = [1, 2, 3, 4, 5, 6, 7, 8];
 
@@ -98,8 +92,8 @@ const MainPage = () => {
 
   return (
     <SafeAreaView className="h-screen">
-      {/* <Stack.Screen options={{ headerShown: false }} /> */}
-      <Text className="text-center font-bold text-xl py-10">
+      <Stack.Screen options={{ headerShown: false }} />
+      <Text className="text-center font-bold text-xl py-8">
         Job Scheduler for crew {params.trip_id}
       </Text>
       <View className="flex flex-row px-8 items-center">
@@ -119,11 +113,10 @@ const MainPage = () => {
         )}
         keyExtractor={(item) => "" + item.id}
       />
-
       <Link href={`/`} className="bg-red-300">
         <Text>Home:</Text>
       </Link>
-      <Pressable className="bg-red-300" onPress={() => router.back()}>
+      <Pressable className="mt-3 bg-red-300" onPress={() => router.back()}>
         <Text>Back: {"<="}</Text>
       </Pressable>
     </SafeAreaView>
