@@ -1,4 +1,5 @@
-﻿import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+﻿import QRCodeGenerator from "../../components/QRCodeGenerator";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { SafeAreaView, View, Text, Pressable } from "react-native";
 
@@ -12,7 +13,8 @@ const RollCall = () => {
       {/* <Stack.Screen /> */}
       <Text>Roll Call</Text>
       <Text>Hello crew of {params.trip_id}</Text>
-      <Text>QR Code</Text>
+      <Text>QR Code:</Text>
+      <QRCodeGenerator id={Math.random() * 10000 + ""} />
       <Text>Verification Code</Text>
       <View className="flex items-center justify-center">
         <Text className="text-blue-300">

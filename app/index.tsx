@@ -18,7 +18,7 @@ const ChooseRoleScreen = () => {
       </Pressable>
       <Pressable
         className="bg-red-500 w-2/5 rounded-2xl py-32"
-        onPress={() => router.push("/public/register/registerForm")}
+        onPress={() => router.push("/public/registerForm")}
       >
         <Text className="font-black uppercase text-2xl text-center">
           Public

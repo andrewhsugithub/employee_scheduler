@@ -16,7 +16,7 @@ const Auth = () => {
   // sign in process here
   const signIn = async () => {
     setAuthLoader(true);
-    const user = await new Promise((res) => setTimeout(res, 5000)); // simulate sign in process 5 seconds
+    const user = await new Promise((res) => setTimeout(res, 2000)); // simulate sign in process 2 seconds
     if (user === null) return;
     setAuthLoader(false);
     // router.push(`/crew/${user.id}`);
