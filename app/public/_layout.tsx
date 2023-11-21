@@ -7,7 +7,7 @@ export default function TabLayout() {
 
   return (
     <>
-      {/* <Stack.Screen options={{ headerShown: false }} /> */}
+      <Stack.Screen options={{ headerShown: false }} />
       <Tabs
         screenOptions={{
           headerShown: false,
