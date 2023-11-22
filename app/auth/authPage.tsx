@@ -28,7 +28,6 @@ const Auth = () => {
       {/* <Stack.Screen options={{ headerShown: false }} /> */}
       <Text>Sign In/Up Form</Text>
       <Text>Your role:</Text>
-      <Text>我想用成手機綁定個人帳號</Text>
       <Pressable onPress={signIn} className=" bg-green-500 p-4">
         {authLoader ? (
           <ActivityIndicator size="large" className="text-gray-400" />
