@@ -10,6 +10,7 @@ import { Slot, SplashScreen, Stack, useRouter } from "expo-router";
 import { useEffect } from "react";
 import "react-native-gesture-handler";
 import { Pressable, SafeAreaView, View, useColorScheme } from "react-native";
+import { Drawer } from "expo-router/drawer";
 import { AntDesign } from "@expo/vector-icons";
 
 export {
@@ -57,25 +58,22 @@ function RootLayoutNav() {
     // <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
     // <Stack screenOptions={{ headerShown: false }} />
     <>
-      <LinearGradient
-        className="h-screen relative"
-        colors={[
-          "rgba(58,131,244,0.4)",
-          "rgba(9,181,211,0.4)",
-          //"rgba(50,70,255,1.0)",
-        ]}
-        //start={{ x: 0.0, y: 0.0 }}
-        //end={{ x: 0.0, y: 1.0 }}
-      >
-        <AntDesign
-          name="caretleft"
-          size={30}
-          color="black"
-          onPress={() => router.back()}
-          className="absolute top-5 left-5"
+      <Drawer>
+        <Drawer.Screen
+          name="index" // This is the name of the page and must match the url from root
+          options={{
+            drawerLabel: "1",
+            title: "job",
+          }}
         />
-        <Slot />
-      </LinearGradient>
+        <Drawer.Screen
+          name="auth/authPage" // This is the name of the page and must match the url from root
+          options={{
+            drawerLabel: "Auth",
+            title: "overview",
+          }}
+        />
+      </Drawer>
     </>
     // </ThemeProvider>
   );

@@ -16,15 +16,24 @@ import {
 } from "@/lib/validations/registerSchema";
 import JobForm from "@/components/JobForm";
 import Carousel from "@/components/Carousel";
-import { openDb } from "@/lib/db";
 import * as Crypto from "expo-crypto";
+import { addDoc, collection } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { LinearGradient } from "expo-linear-gradient";
 
 const Register = () => {
   const registerTrip = (data: RegisterFormSchema) => {
     // TODO: make sure your boss verifies your trip, so send this form to your boss via email or ...
     console.log("data: ", data);
-    const tripDb = openDb(`trip_${data.trip_id}.db`);
+
+    const usersRef = collection(db, "trips");
+    addDoc(usersRef, { captain_name: data.captain })
+      .then((res) => {
+        console.log("res: ", res);
+      })
+      .catch((err) => {
+        console.log("err: ", err);
+      });
   };
 
   const {
@@ -42,20 +51,7 @@ const Register = () => {
       <Text className=" text-center font-bold uppercase text-3xl py-5">
         Register Form
       </Text>
-      <Controller
-        control={control}
-        name="trip_id"
-        defaultValue={Crypto.randomUUID()}
-        render={({ field: { onChange, onBlur, value } }) => {
-          return (
-            <View className="flex flex-row py-2 justify-center">
-              <Text className="text-lg font-medium text-black">
-                Trip Id: {value}
-              </Text>
-            </View>
-          );
-        }}
-      />
+
       <View className="bg-slate-100 rounded-3xl p-3 m-8">
         <Controller
           control={control}
@@ -78,20 +74,7 @@ const Register = () => {
           }}
         />
         {errors?.captain?.message && <Text>{errors?.captain?.message}</Text>}
-        <Controller
-          control={control}
-          name="captain_id"
-          defaultValue={Crypto.randomUUID()}
-          render={({ field: { onChange, onBlur, value } }) => {
-            return (
-              <View className="flex flex-row py-2">
-                <Text className="text-lg font-medium text-black">
-                  Captain Id:{value}
-                </Text>
-              </View>
-            );
-          }}
-        />
+
         <Text className="text-2xl text-black font-extrabold">
           Job Schedule for captain:{" "}
         </Text>
