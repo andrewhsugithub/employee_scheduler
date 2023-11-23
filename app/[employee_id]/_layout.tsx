@@ -1,4 +1,5 @@
 ﻿import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { LinearGradient } from "expo-linear-gradient";
 import { Link, Tabs, useLocalSearchParams, Stack } from "expo-router";
 import { Pressable, useColorScheme } from "react-native";
 

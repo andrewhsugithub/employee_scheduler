@@ -2,14 +2,14 @@
 
 export const JobSchema = z.object({
   job_name: z.string(),
+  job_id: z.string(),
   description: z.string().optional(),
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
 });
 
 export const RegisterSchema = z.object({
-  boss: z.string(),
-  boss_id: z.string(),
+  trip_id: z.string(),
   captain: z.string(),
   captain_id: z.string(),
   captain_job: z.array(JobSchema),
@@ -20,6 +20,7 @@ export const RegisterSchema = z.object({
       crew_job: z.array(JobSchema),
     })
   ),
+  // success: z.boolean().default(true),
 });
 
 export type RegisterFormSchema = z.infer<typeof RegisterSchema>;

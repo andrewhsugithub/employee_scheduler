@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Stack } from "expo-router";
-
 const Auth = () => {
   const [authLoader, setAuthLoader] = useState(false);
   const router = useRouter();
@@ -25,8 +24,21 @@ const Auth = () => {
 
   return (
     <SafeAreaView className="flex items-center justify-center">
+      {/* <LinearGradient
+        className="h-screen"
+        colors={[
+          "rgba(135,206,235,1.0)",
+          "rgba(100,145,180,1.0)",
+          //"rgba(50,70,255,1.0)",
+        ]}
+        start={{ x: 0.0, y: 0.0 }}
+        end={{ x: 0.0, y: 1.0 }}
+      > */}
       {/* <Stack.Screen options={{ headerShown: false }} /> */}
-      <Text>Sign In/Up Form</Text>
+      <Text className="text-2xl text-black font-extrabold">
+        Sign In/Up Form
+      </Text>
+
       <Text>Your role:</Text>
       <Text>我想用成手機綁定個人帳號</Text>
       <Pressable onPress={signIn} className=" bg-green-500 p-4">
@@ -36,6 +48,7 @@ const Auth = () => {
           <Text>Sign In/Up</Text>
         )}
       </Pressable>
+      {/* </LinearGradient> */}
     </SafeAreaView>
   );
 };

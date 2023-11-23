@@ -20,25 +20,27 @@ const PickDate = ({ onChange, value }: PickDateProps) => {
 
     if (type === "set") {
       onChange(date!);
-      setShow(false);
-    } else if (type === "dismissed") {
-      setShow(false);
+      // setShow(false);
     }
   };
 
   return (
     <View>
-      <Pressable onPress={() => setShow(true)}>
-        <Text>{value.toLocaleString()}</Text>
+      <Pressable className="bg-white " onPress={() => setShow(() => !show)}>
+        <Text className="text-blue-400">
+          <Text className="rounded-full">Set Date & Time:{"\t"}</Text>
+          <Text className="text-black">{value.toLocaleString()}</Text>
+        </Text>
       </Pressable>
       {show && (
-        <DateTimePicker
-          value={value}
-          mode="date"
-          display="calendar"
-          is24Hour={true}
-          onChange={onChangeDate}
-        />
+        <>
+          <DateTimePicker
+            value={value}
+            mode="datetime"
+            display="spinner"
+            onChange={onChangeDate}
+          />
+        </>
       )}
     </View>
   );

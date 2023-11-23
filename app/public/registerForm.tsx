@@ -5,26 +5,26 @@
   Pressable,
   TextInput,
   FlatList,
-  ScrollView,
+  ActivityIndicator,
   Dimensions,
 } from "react-native";
-import { Stack } from "expo-router";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   type RegisterFormSchema,
   RegisterSchema,
 } from "@/lib/validations/registerSchema";
 import JobForm from "@/components/JobForm";
-import { AntDesign } from "@expo/vector-icons";
-import { useRef } from "react";
 import Carousel from "@/components/Carousel";
-
-const { width: windowWidth, height: windowHeight } = Dimensions.get("window");
+import { openDb } from "@/lib/db";
+import * as Crypto from "expo-crypto";
+import { LinearGradient } from "expo-linear-gradient";
 
 const Register = () => {
-  const registerTrip = () => {
+  const registerTrip = (data: RegisterFormSchema) => {
     // TODO: make sure your boss verifies your trip, so send this form to your boss via email or ...
+    console.log("data: ", data);
+    const tripDb = openDb(`trip_${data.trip_id}.db`);
   };
 
   const {
@@ -39,43 +39,24 @@ const Register = () => {
 
   return (
     <SafeAreaView className="w-full">
-      <Stack.Screen options={{ headerShown: false }} />
-      <Text className="text-center font-bold uppercase text-3xl py-5">
+      <Text className=" text-center font-bold uppercase text-3xl py-5">
         Register Form
       </Text>
-      <View
-        className="bg-gray-300 rounded-2xl p-3"
-        style={{
-          backgroundColor: "#3498db",
-          borderRadius: 20,
-          padding: 20,
-          margin: 20,
+      <Controller
+        control={control}
+        name="trip_id"
+        defaultValue={Crypto.randomUUID()}
+        render={({ field: { onChange, onBlur, value } }) => {
+          return (
+            <View className="flex flex-row py-2 justify-center">
+              <Text className="text-lg font-medium text-black">
+                Trip Id: {value}
+              </Text>
+            </View>
+          );
         }}
-      >
-        <Controller
-          control={control}
-          name="boss"
-          render={({
-            field: { onChange, onBlur, value },
-            fieldState: { error },
-          }) => {
-            return (
-              <View className="flex flex-row py-2">
-                <Text className="text-lg font-medium text-white">
-                  Boss Name:{" "}
-                </Text>
-                <TextInput
-                  placeholder="Boss Name"
-                  onBlur={onBlur}
-                  value={value}
-                  onChangeText={onChange}
-                  className="border-2 border-black bg-white flex-1"
-                />
-              </View>
-            );
-          }}
-        />
-        {errors?.boss?.message && <Text>{errors?.boss?.message}</Text>}
+      />
+      <View className="bg-slate-100 rounded-3xl p-3 m-8">
         <Controller
           control={control}
           name="captain"
@@ -85,33 +66,49 @@ const Register = () => {
           }) => {
             return (
               <View className="flex flex-row py-2">
-                <Text className="text-lg font-medium text-white">
-                  Captain Name:{" "}
-                </Text>
                 <TextInput
                   placeholder="Captain Name"
                   onBlur={onBlur}
                   value={value}
                   onChangeText={onChange}
-                  className="border-2 border-black bg-white flex-1"
+                  className="border border-black bg-gray-200 flex-1 text-center rounded-full py-2"
                 />
               </View>
             );
           }}
         />
         {errors?.captain?.message && <Text>{errors?.captain?.message}</Text>}
-        <Text className="text-2xl text-white font-extrabold">
+        <Controller
+          control={control}
+          name="captain_id"
+          defaultValue={Crypto.randomUUID()}
+          render={({ field: { onChange, onBlur, value } }) => {
+            return (
+              <View className="flex flex-row py-2">
+                <Text className="text-lg font-medium text-black">
+                  Captain Id:{value}
+                </Text>
+              </View>
+            );
+          }}
+        />
+        <Text className="text-2xl text-black font-extrabold">
           Job Schedule for captain:{" "}
         </Text>
-        <JobForm role="captain" />
+
+        <JobForm role="captain" control={control} errors={errors} />
         <Carousel control={control} errors={errors} />
 
-        <Pressable
-          className="bg-green-500 rounded-2xl p-5"
-          onPress={registerTrip}
-        >
-          <Text>Register</Text>
-        </Pressable>
+        {isSubmitting ? (
+          <ActivityIndicator />
+        ) : (
+          <Pressable
+            className="bg-blue-400 rounded-full p-3"
+            onPress={handleSubmit(registerTrip)}
+          >
+            <Text className="text-center text-xl">Register</Text>
+          </Pressable>
+        )}
         <Text>
           See email for QR Code and verification code if register succeeds Note:
           you and your crew will also receive push notifications (see

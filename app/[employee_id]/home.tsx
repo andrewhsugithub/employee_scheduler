@@ -13,10 +13,10 @@ const CrewMember = () => {
   return (
     <SafeAreaView>
       <Text className="bg-pink-600 p-3 font-bold text-white">
-        Hello {params.employee_id}
+        Hello! Crew {params.employee_id}
       </Text>
       <TripInfo />
-      <Text>Your schedule in next trip: </Text>
+      <Text>Your schedule in this trip: </Text>
       <Text>Your schedule in next trip: </Text>
       <View className="flex items-center">
         <StyledPressable className="bg-red-600 active:bg-blue-300 p-3 rounded-2xl">

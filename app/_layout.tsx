@@ -5,9 +5,12 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { SplashScreen, Stack } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+import { Slot, SplashScreen, Stack, useRouter } from "expo-router";
 import { useEffect } from "react";
-import { View, useColorScheme } from "react-native";
+import "react-native-gesture-handler";
+import { Pressable, SafeAreaView, View, useColorScheme } from "react-native";
+import { AntDesign } from "@expo/vector-icons";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -48,12 +51,32 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const router = useRouter();
 
   return (
     // <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
     // <Stack screenOptions={{ headerShown: false }} />
-    <Stack />
-
+    <>
+      <LinearGradient
+        className="h-screen relative"
+        colors={[
+          "rgba(58,131,244,0.4)",
+          "rgba(9,181,211,0.4)",
+          //"rgba(50,70,255,1.0)",
+        ]}
+        //start={{ x: 0.0, y: 0.0 }}
+        //end={{ x: 0.0, y: 1.0 }}
+      >
+        <AntDesign
+          name="caretleft"
+          size={30}
+          color="black"
+          onPress={() => router.back()}
+          className="absolute top-5 left-5"
+        />
+        <Slot />
+      </LinearGradient>
+    </>
     // </ThemeProvider>
   );
 }
