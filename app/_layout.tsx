@@ -8,10 +8,7 @@ import { useFonts } from "expo-font";
 import { LinearGradient } from "expo-linear-gradient";
 import { Slot, SplashScreen, Stack, useRouter } from "expo-router";
 import { useEffect } from "react";
-import "react-native-gesture-handler";
 import { Pressable, SafeAreaView, View, useColorScheme } from "react-native";
-import { Drawer } from "expo-router/drawer";
-import { AntDesign } from "@expo/vector-icons";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -58,22 +55,8 @@ function RootLayoutNav() {
     // <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
     // <Stack screenOptions={{ headerShown: false }} />
     <>
-      <Drawer>
-        <Drawer.Screen
-          name="index" // This is the name of the page and must match the url from root
-          options={{
-            drawerLabel: "1",
-            title: "job",
-          }}
-        />
-        <Drawer.Screen
-          name="auth/authPage" // This is the name of the page and must match the url from root
-          options={{
-            drawerLabel: "Auth",
-            title: "overview",
-          }}
-        />
-      </Drawer>
+      {/* <Stack screenOptions={{ headerShown: false, gestureEnabled: false }} /> */}
+      <Slot />
     </>
     // </ThemeProvider>
   );

@@ -2,15 +2,27 @@
 import { Text, SafeAreaView, View, Pressable } from "react-native";
 import QRCodeGenerator from "./QRCodeGenerator";
 import { styled } from "nativewind";
+import Info from "./Trips/Info";
 
 const StyledPressable = styled(Pressable);
 
 const TripInfo = () => {
   const [generate, setGenerate] = useState(false);
+  const [toggleModal, setToggleModal] = useState(false);
 
   return (
     <View>
-      <Text>Your schedule in next trip: </Text>
+      <Pressable
+        className="p-3 bg-blue-500"
+        onPress={() => setToggleModal(!toggleModal)}
+      >
+        <Text>Trip Info: </Text>
+      </Pressable>
+      <Info
+        id={Math.random() * 100000 + ""}
+        show={toggleModal}
+        handleShow={(showModal: boolean) => setToggleModal(showModal)}
+      />
       <Text className="text-red-600">
         If you are captain: Press Start Button this will be the qr code and
         verification code of the trip you receive in your email 1. make the ipad

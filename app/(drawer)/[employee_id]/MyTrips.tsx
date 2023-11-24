@@ -1,7 +1,8 @@
 ﻿import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView, Text, View, Pressable } from "react-native";
 import { styled } from "nativewind";
-import TripInfo from "../../components/TripInfo";
+import TripInfo from "@/components/TripInfo";
+import AddTripButton from "@/components/Trips/AddTripButton";
 
 const StyledPressable = styled(Pressable);
 const StyledText = styled(Text);
@@ -11,7 +12,7 @@ const CrewMember = () => {
   const router = useRouter();
 
   return (
-    <SafeAreaView>
+    <SafeAreaView className="h-full">
       <Text className="bg-pink-600 p-3 font-bold text-white">
         Hello! Crew {params.employee_id}
       </Text>
@@ -25,6 +26,7 @@ const CrewMember = () => {
           </StyledText>
         </StyledPressable>
       </View>
+      <AddTripButton />
     </SafeAreaView>
   );
 };
