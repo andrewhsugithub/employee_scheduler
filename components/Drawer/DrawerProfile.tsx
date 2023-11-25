@@ -1,10 +1,15 @@
-﻿import { useLocalSearchParams } from "expo-router";
+﻿import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
 const DrawerProfile = () => {
+  const router = useRouter();
   const [expand, setExpand] = useState(false);
   const params = useLocalSearchParams();
+
+  const handleLogout = () => {
+    router.push("/(auth)/SignIn");
+  };
 
   return (
     <View>
@@ -19,7 +24,10 @@ const DrawerProfile = () => {
           <Pressable className={`p-2 ${!expand ? "hidden" : ""}`}>
             <Text className="text-2xl">Bla Bla Bla</Text>
           </Pressable>
-          <Pressable className={`p-2 ${!expand ? "hidden" : ""}`}>
+          <Pressable
+            className={`p-2 ${!expand ? "hidden" : ""}`}
+            onPress={handleLogout}
+          >
             <Text className="text-2xl">Logout</Text>
           </Pressable>
         </View>

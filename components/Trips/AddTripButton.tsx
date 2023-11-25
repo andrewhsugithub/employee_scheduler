@@ -3,7 +3,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import RegisterForm from "./RegisterForm";
 
-const AddTripButton = () => {
+interface AddTripButtonProps {
+  captainName: string;
+}
+
+const AddTripButton = ({ captainName }: AddTripButtonProps) => {
   const [showModal, setShowModal] = useState(false);
 
   return (
@@ -19,6 +23,7 @@ const AddTripButton = () => {
       </Pressable>
       <RegisterForm
         show={showModal}
+        captainName={captainName}
         handleShow={(showModal: boolean) => setShowModal(showModal)}
       />
     </>

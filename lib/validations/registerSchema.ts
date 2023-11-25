@@ -6,7 +6,7 @@ export const JobSchema = z.object({
 });
 
 export const RegisterSchema = z.object({
-  captain: z.string(),
+  // captain: z.string(),
   captain_job: z.array(JobSchema),
   crew: z.array(
     z.object({

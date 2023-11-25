@@ -14,7 +14,7 @@ const CrewMember = () => {
   return (
     <SafeAreaView className="h-full">
       <Text className="bg-pink-600 p-3 font-bold text-white">
-        Hello! Crew {params.employee_id}
+        Hello! {params.employee_id}
       </Text>
       <TripInfo />
       <Text>Your schedule in this trip: </Text>
@@ -26,7 +26,7 @@ const CrewMember = () => {
           </StyledText>
         </StyledPressable>
       </View>
-      <AddTripButton />
+      <AddTripButton captainName={params.employee_id as string} />
     </SafeAreaView>
   );
 };
