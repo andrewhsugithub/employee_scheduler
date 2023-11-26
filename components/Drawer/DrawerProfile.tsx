@@ -1,13 +1,16 @@
 ﻿import { useLocalSearchParams, useRouter } from "expo-router";
+import { getAuth, signOut } from "firebase/auth";
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
 const DrawerProfile = () => {
+  const auth = getAuth();
   const router = useRouter();
   const [expand, setExpand] = useState(false);
   const params = useLocalSearchParams();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signOut(auth);
     router.push("/(auth)/SignIn");
   };
 

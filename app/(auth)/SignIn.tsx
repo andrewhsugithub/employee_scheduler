@@ -1,5 +1,4 @@
 ﻿import { Link, useRouter } from "expo-router";
-import { useRef, useState } from "react";
 import {
   SafeAreaView,
   View,
@@ -8,38 +7,42 @@ import {
   ActivityIndicator,
   TextInput,
 } from "react-native";
-import { addDoc, collection } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import PhoneInput from "react-native-phone-number-input";
-import { type AuthFormSchema, AuthSchema } from "@/lib/validations/authSchema";
-import { Controller, useForm } from "react-hook-form";
+import { auth } from "@/lib/firebase";
+import {
+  type SignInFormSchema,
+  SignInSchema,
+} from "@/lib/validations/signInSchema";
+import { Controller, set, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  getAuth,
+  setPersistence,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import { useEffect } from "react";
 
 // const phoneUtil = PhoneNumberUtil.getInstance();
 
-const Auth = () => {
+const SignIn = () => {
   const router = useRouter();
 
-  const [value, setValue] = useState("");
-  const [formattedValue, setFormattedValue] = useState("");
-  const [valid, setValid] = useState(true);
-  const [submitted, setSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const phoneInput = useRef<PhoneInput>(null);
+  useEffect(() => {
+    const user = getAuth().currentUser;
+    if (user) router.push(`/(drawer)/${user.displayName}/MyTrips`);
+    console.log("user: ", user);
+  }, []);
 
   // TODO: sign in process here
-  const SignIn = async (data: AuthFormSchema) => {
-    setIsSubmitting(true);
-    // TODO: need to format phone number ex: omit (09)
-    const user = {
-      name: data.username,
-      email: data.email,
-      password: data.password,
-      phone_number: `+${phoneInput.current?.getCallingCode()} ${value}`,
-    };
-    console.log("user: ", user);
-    setIsSubmitting(false);
-    router.push(`/(drawer)/${data.username}/MyTrips`);
+  const handleSignIn = async (data: SignInFormSchema) => {
+    await signInWithEmailAndPassword(auth, data.email.trim(), data.password)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        // if (!user.emailVerified) alert("Please verify your email first");
+        router.push(`/(drawer)/${user.displayName}/MyTrips`);
+      })
+      .catch((err) => {
+        alert(err);
+      });
   };
 
   const {
@@ -47,38 +50,15 @@ const Auth = () => {
     handleSubmit,
     watch,
     reset,
-    formState: { errors },
-  } = useForm<AuthFormSchema>({
-    resolver: zodResolver(AuthSchema),
+    formState: { errors, isSubmitting },
+  } = useForm<SignInFormSchema>({
+    resolver: zodResolver(SignInSchema),
   });
 
   return (
     <SafeAreaView className="h-screen flex items-center justify-center">
       <View className="h-full flex-1 w-1/2">
         <Text className="text-2xl text-black font-extrabold">Sign In Form</Text>
-
-        <Text>我想用成手機綁定個人帳號</Text>
-        <Controller
-          control={control}
-          name="username"
-          render={({
-            field: { onChange, onBlur, value },
-            fieldState: { error },
-          }) => {
-            return (
-              <View className="flex flex-row py-2">
-                <TextInput
-                  placeholder="Name"
-                  onBlur={onBlur}
-                  value={value}
-                  onChangeText={onChange}
-                  className="border border-black bg-gray-200 flex-1 text-center rounded-full py-2"
-                />
-              </View>
-            );
-          }}
-        />
-        {errors?.username?.message && <Text>{errors?.username?.message}</Text>}
         <Controller
           control={control}
           name="email"
@@ -91,6 +71,7 @@ const Auth = () => {
                 <TextInput
                   placeholder="Email"
                   onBlur={onBlur}
+                  keyboardType="email-address"
                   value={value}
                   inputMode="email"
                   onChangeText={onChange}
@@ -123,65 +104,10 @@ const Auth = () => {
           }}
         />
         {errors?.password?.message && <Text>{errors?.password?.message}</Text>}
-        <Controller
-          control={control}
-          name="confirmPassword"
-          render={({
-            field: { onChange, onBlur, value },
-            fieldState: { error },
-          }) => {
-            return (
-              <View className="flex flex-row py-2">
-                <TextInput
-                  placeholder="Confirm Password"
-                  onBlur={onBlur}
-                  value={value}
-                  secureTextEntry
-                  onChangeText={onChange}
-                  className="border border-black bg-gray-200 flex-1 text-center rounded-full py-2"
-                />
-              </View>
-            );
-          }}
-        />
-        {errors?.confirmPassword?.message && (
-          <Text>{errors?.confirmPassword?.message}</Text>
-        )}
-        <PhoneInput
-          ref={phoneInput}
-          countryPickerButtonStyle={{ width: "20%" }}
-          containerStyle={{ width: "100%" }}
-          defaultValue={value}
-          defaultCode="TW"
-          layout="first"
-          onChangeText={(text) => setValue(text)}
-          onChangeFormattedText={(text) => {
-            setFormattedValue(text);
-            submitted && setValid(phoneInput.current?.isValidNumber(text)!);
-          }}
-          // withDarkTheme
-          withShadow
-        />
-        {!valid && <Text>Phone number is not valid</Text>}
 
         <Pressable
           className="bg-green-500 p-4 rounded-full items-center"
-          onPress={handleSubmit(
-            (data) => {
-              const checkValid =
-                phoneInput.current?.isValidNumber(formattedValue);
-              setValid(checkValid!);
-              setSubmitted(true);
-              if (!checkValid) return;
-              SignIn(data);
-            },
-            () => {
-              const checkValid =
-                phoneInput.current?.isValidNumber(formattedValue);
-              setValid(checkValid!);
-              setSubmitted(true);
-            }
-          )}
+          onPress={handleSubmit(handleSignIn)}
         >
           {isSubmitting ? (
             <ActivityIndicator size="small" className="text-gray-400" />
@@ -200,4 +126,4 @@ const Auth = () => {
   );
 };
 
-export default Auth;
+export default SignIn;

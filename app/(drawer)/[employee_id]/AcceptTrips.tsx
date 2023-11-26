@@ -1,11 +1,13 @@
 ﻿import AddTripButton from "@/components/Trips/AddTripButton";
 import Info from "@/components/Trips/Info";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
+import { getAuth } from "firebase/auth";
 import { useState } from "react";
 import { SafeAreaView, View, Text, Pressable } from "react-native";
 
 const AcceptTrips = () => {
   const [toggleModal, setToggleModal] = useState(false);
+  const auth = getAuth();
 
   return (
     <SafeAreaView className="h-full">
@@ -30,7 +32,7 @@ const AcceptTrips = () => {
       <Text>Trip #1</Text>
       <Text>Trip #1</Text>
       <Text>Trip #1</Text>
-      <AddTripButton />
+      <AddTripButton captainName={auth.currentUser?.displayName!} />
     </SafeAreaView>
   );
 };

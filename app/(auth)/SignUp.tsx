@@ -8,12 +8,19 @@ import {
   ActivityIndicator,
   TextInput,
 } from "react-native";
-import { addDoc, collection } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { doc, setDoc } from "firebase/firestore";
+import { db, auth } from "@/lib/firebase";
 import PhoneInput from "react-native-phone-number-input";
 import { type AuthFormSchema, AuthSchema } from "@/lib/validations/authSchema";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  updateEmail,
+  updatePhoneNumber,
+  updateProfile,
+} from "firebase/auth";
 
 // const phoneUtil = PhoneNumberUtil.getInstance();
 
@@ -30,14 +37,38 @@ const Auth = () => {
   // sign in process here
   const SignUp = async (data: AuthFormSchema) => {
     setIsSubmitting(true);
+
     // TODO: need to format phone number ex: omit (09)
-    const user = {
-      name: data.username,
-      email: data.email,
-      password: data.password,
-      phone_number: `+${phoneInput.current?.getCallingCode()} ${value}`,
-    };
-    console.log("user: ", user);
+    const phone = `+${phoneInput.current?.getCallingCode()} ${value}`;
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        data.email.trim(),
+        data.password
+      );
+      await updateProfile(userCredential.user, {
+        displayName: data.username,
+        photoURL: data.photoUrl,
+      });
+      await updateEmail(userCredential.user, data.email.trim());
+
+      const user = {
+        name: data.username,
+        email: data.email,
+        phone_number: phone,
+        created_at: new Date().toUTCString(),
+      };
+      console.log("user: ", user);
+
+      await setDoc(doc(db, "users", userCredential.user.uid), user);
+
+      // await sendEmailVerification(userCredential.user);
+      alert("Sent verification email, please verify your email to sign in");
+    } catch (err) {
+      console.log(err);
+      alert(err);
+    }
 
     // const usersRef = collection(db, "users");
     // try {
@@ -46,7 +77,7 @@ const Auth = () => {
     //   console.log(err);
     // }
     setIsSubmitting(false);
-    router.push(`/(drawer)/${data.username}/MyTrips`);
+    router.push(`/(auth)/SignIn`);
   };
 
   const {

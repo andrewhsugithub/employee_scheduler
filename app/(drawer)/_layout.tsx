@@ -6,8 +6,10 @@ import { Text, Pressable, StyleProp, ViewStyle } from "react-native";
 import * as ScreenOrientation from "expo-screen-orientation";
 import { Feather } from "@expo/vector-icons";
 import DrawerContent from "@/components/Drawer/DrawerContent";
+import { getAuth, signOut } from "firebase/auth";
 
 export default function DrawerLayout() {
+  const auth = getAuth();
   const router = useRouter();
   const navigate = useNavigation();
   const [orientation, setOrientation] =
@@ -77,7 +79,8 @@ export default function DrawerLayout() {
     setDrawerStatus(() => (drawerStatus === "open" ? "closed" : "open"));
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signOut(auth);
     router.push("/(auth)/SignIn");
   };
 
@@ -104,7 +107,7 @@ export default function DrawerLayout() {
       <Drawer.Screen
         name="[employee_id]/MyTrips"
         options={{
-          drawerLabel: "Home",
+          drawerLabel: "Trips",
           title: "My Trips",
         }}
       />
@@ -113,6 +116,13 @@ export default function DrawerLayout() {
         options={{
           drawerLabel: "Accept",
           title: "Accept Trips Page",
+        }}
+      />
+      <Drawer.Screen
+        name="[employee_id]/Profile"
+        options={{
+          drawerLabel: "Profile",
+          title: "Profile Page",
         }}
       />
     </Drawer>

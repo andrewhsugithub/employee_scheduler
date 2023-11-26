@@ -2,9 +2,7 @@
 import { CountryCodeList } from "react-native-country-picker-modal";
 import { z } from "zod";
 
-const countryCode = z.enum(CountryCodeList);
-
-export const AuthSchema = z
+export const ProfileSchema = z
   .object({
     username: z.string(),
     email: z.string().email(),
@@ -25,4 +23,4 @@ export const AuthSchema = z
     message: "Passwords do not match",
   });
 
-export type AuthFormSchema = z.infer<typeof AuthSchema>;
+export type ProfileFormSchema = z.infer<typeof ProfileSchema>;

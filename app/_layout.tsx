@@ -1,3 +1,4 @@
+import { CheckConnectionProvider } from "@/context/checkConnectionContext";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import {
   DarkTheme,
@@ -56,7 +57,9 @@ function RootLayoutNav() {
     // <Stack screenOptions={{ headerShown: false }} />
     <>
       {/* <Stack screenOptions={{ headerShown: false, gestureEnabled: false }} /> */}
-      <Slot />
+      <CheckConnectionProvider>
+        <Slot />
+      </CheckConnectionProvider>
     </>
     // </ThemeProvider>
   );
