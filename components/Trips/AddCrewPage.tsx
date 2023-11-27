@@ -1,5 +1,6 @@
-﻿import { View, Text, Pressable, TextInput, ScrollView } from "react-native";
+﻿import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { TextInput } from "react-native-paper";
 
 import { getAuth } from "firebase/auth";
 import * as Crypto from "expo-crypto";
@@ -19,15 +20,9 @@ const AddCrewPage = ({ control, errors }: AddCrewPageProps) => {
   return (
     <View className="bg-slate-100 rounded-3xl p-3 m-8">
       <View className="flex py-2">
-        <TextInput
-          placeholder="Captain Name"
-          defaultValue={`Captain: ${auth.currentUser?.displayName!}`}
-          editable={false}
-          className="border border-black bg-gray-200 flex-1 text-center rounded-full py-2"
-        />
         <ScrollView className="h-32">
           {fields.map((item, index) => (
-            <View className={`"p-2 "`} key={Crypto.randomUUID()}>
+            <View className={`p-2 border-b-2 `} key={Crypto.randomUUID()}>
               <Controller
                 control={control}
                 name={`crew.${index}.crew_name`}
@@ -37,13 +32,14 @@ const AddCrewPage = ({ control, errors }: AddCrewPageProps) => {
                 }) => {
                   return (
                     <View className="flex flex-row py-2">
-                      <Text className="text-lg font-medium">Crew Name: </Text>
                       <TextInput
-                        placeholder="Crew Name"
+                        label="Crew Name"
+                        // placeholder="Type name ..."
                         onBlur={onBlur}
                         value={value}
                         onChangeText={onChange}
-                        className="border-2 border-black bg-white"
+                        mode="outlined"
+                        className="flex-1"
                       />
                     </View>
                   );
@@ -64,6 +60,7 @@ const AddCrewPage = ({ control, errors }: AddCrewPageProps) => {
           ))}
         </ScrollView>
         <View className="py-1">
+          <View className="p-2 border-b-2 my-4"></View>
           <Pressable
             onPress={() => {
               prepend({

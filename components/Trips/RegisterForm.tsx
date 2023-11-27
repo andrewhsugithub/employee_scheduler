@@ -1,13 +1,14 @@
 ﻿import {
   View,
   Text,
+  TextInput,
   Pressable,
   ActivityIndicator,
   Modal,
   TouchableOpacity,
 } from "react-native";
 import { addDoc, collection } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 import { useState } from "react";
@@ -20,6 +21,7 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
+import { getAuth } from "firebase/auth";
 
 interface RegisterFormProps {
   show: boolean;
@@ -65,10 +67,17 @@ const Register = ({ show, captainName, handleShow }: RegisterFormProps) => {
         className={`absolute bg-transparent z-10 right-0 left-0 top-0 bottom-0 flex-1 items-center justify-center`}
       > */}
       <View className={`p-5 bg-gray-400 items-center justify-center flex-1`}>
-        <Text className=" text-center font-bold uppercase text-3xl py-5">
+        <Text className=" text-center font-bold text-3xl py-5">
           Register Form
         </Text>
-
+        <View className="flex flex-row items-center">
+          <TextInput
+            placeholder="Captain Name"
+            defaultValue={`Captain: ${auth.currentUser?.displayName!}`}
+            editable={false}
+            className="border border-black bg-gray-200 flex-1 text-center rounded-full py-2"
+          />
+        </View>
         <View className="flex flex-row items-center">
           <AntDesign
             name="caretleft"
@@ -82,6 +91,7 @@ const Register = ({ show, captainName, handleShow }: RegisterFormProps) => {
           />
 
           {/* ADD CREW FORM PAGE 1 */}
+
           <View className={`flex-1 ${pageIndex === 0 ? "p-2 " : "hidden"}`}>
             <AddCrewPage control={control} errors={errors} />
           </View>
@@ -123,7 +133,6 @@ const Register = ({ show, captainName, handleShow }: RegisterFormProps) => {
         >
           <MaterialIcons name="close" color="#fff" size={22} />
         </Pressable>
-
         {/* <View className="p-2 items-center flex-row justify-center gap-x-2">
           {fields.map((item, idx) => (
             <Pressable

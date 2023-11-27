@@ -1,11 +1,21 @@
 ﻿import { Link, useLocalSearchParams, useRouter } from "expo-router";
-import { SafeAreaView, Text, View, Pressable } from "react-native";
+import {
+  SafeAreaView,
+  Text,
+  View,
+  Pressable,
+  FlatList,
+  ScrollView,
+} from "react-native";
 import { styled } from "nativewind";
 import TripInfo from "@/components/TripInfo";
 import AddTripButton from "@/components/Trips/AddTripButton";
+import TripCard from "@/components/Trips/TripCard";
 
 const StyledPressable = styled(Pressable);
 const StyledText = styled(Text);
+
+const trips = ["trip1", "trip2", "trip3", "trip4", "trip5"];
 
 const CrewMember = () => {
   const params = useLocalSearchParams();
@@ -13,11 +23,47 @@ const CrewMember = () => {
 
   return (
     <SafeAreaView className="h-full">
-      <Text className="bg-pink-600 p-3 font-bold text-white">
-        Hello! {params.employee_id}
-      </Text>
-      <TripInfo />
-      <Text>Your schedule in this trip: </Text>
+      <ScrollView>
+        <View className="p-3">
+          <Text className="font-extrabold text-2xl py-4">Ongoing: </Text>
+          <View className="flex-row flex-wrap">
+            {trips.map((trip) => (
+              <TripCard
+                tripName="Hello"
+                captainName="許榕安"
+                tripFrom={new Date("2023-01-01T10:00:00").toISOString()}
+                tripEnd={new Date().toISOString()}
+                tripLocation="Taipei"
+                isOngoing={true}
+              />
+            ))}
+          </View>
+          {/* <FlatList
+            className="py-4"
+            data={trips}
+            renderItem={({ item }) => (
+              
+            )}
+            horizontal
+            // className="bg-slate-200 p-4"
+          /> */}
+        </View>
+        <View className="p-3">
+          <Text className="font-extrabold text-2xl py-4">Future: </Text>
+          <View className="flex-row flex-wrap">
+            {trips.map((trip) => (
+              <TripCard
+                tripName="Hello"
+                captainName="許榕安"
+                tripFrom={new Date("2023-01-01T10:00:00").toISOString()}
+                tripEnd={new Date().toISOString()}
+                tripLocation="Taipei"
+                isOngoing={true}
+              />
+            ))}
+          </View>
+        </View>
+        {/* <Text>Your schedule in this trip: </Text>
       <Text>Your schedule in next trip: </Text>
       <View className="flex items-center">
         <StyledPressable className="bg-red-600 active:bg-blue-300 p-3 rounded-2xl">
@@ -26,6 +72,8 @@ const CrewMember = () => {
           </StyledText>
         </StyledPressable>
       </View>
+       */}
+      </ScrollView>
       <AddTripButton captainName={params.employee_id as string} />
     </SafeAreaView>
   );

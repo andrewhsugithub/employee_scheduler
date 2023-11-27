@@ -6,12 +6,12 @@ import {
   Text,
   Pressable,
   ActivityIndicator,
-  TextInput,
 } from "react-native";
 import { doc, setDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import PhoneInput from "react-native-phone-number-input";
 import { type AuthFormSchema, AuthSchema } from "@/lib/validations/authSchema";
+import { TextInput } from "react-native-paper";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -63,7 +63,7 @@ const Auth = () => {
 
       await setDoc(doc(db, "users", userCredential.user.uid), user);
 
-      // await sendEmailVerification(userCredential.user);
+      await sendEmailVerification(userCredential.user);
       alert("Sent verification email, please verify your email to sign in");
     } catch (err) {
       console.log(err);
@@ -89,13 +89,14 @@ const Auth = () => {
   } = useForm<AuthFormSchema>({
     resolver: zodResolver(AuthSchema),
   });
-
+  const [text, setText] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(true);
+  const [passwordVisibledouble, setPasswordVisibledouble] = useState(true);
   return (
     <SafeAreaView className="h-screen flex items-center justify-center">
       <View className="h-full flex-1 w-1/2">
         <Text className="text-2xl text-black font-extrabold">Sign Up Form</Text>
 
-        <Text>我想用成手機綁定個人帳號</Text>
         <Controller
           control={control}
           name="username"
@@ -104,13 +105,13 @@ const Auth = () => {
             fieldState: { error },
           }) => {
             return (
-              <View className="flex flex-row py-2">
+              <View className="flex flex-row p-2">
                 <TextInput
-                  placeholder="Name"
+                  label="Name"
                   onBlur={onBlur}
                   value={value}
-                  onChangeText={onChange}
-                  className="border border-black bg-gray-200 flex-1 text-center rounded-full py-2"
+                  mode="outlined"
+                  className=" flex-1 rounded-full"
                 />
               </View>
             );
@@ -125,14 +126,15 @@ const Auth = () => {
             fieldState: { error },
           }) => {
             return (
-              <View className="flex flex-row py-2">
+              <View className="flex flex-row p-2">
                 <TextInput
-                  placeholder="Email"
+                  label="Email"
                   onBlur={onBlur}
                   value={value}
                   inputMode="email"
                   onChangeText={onChange}
-                  className="border border-black bg-gray-200 flex-1 text-center rounded-full py-2"
+                  mode="outlined"
+                  className=" flex-1 rounded-full"
                 />
               </View>
             );
@@ -147,14 +149,21 @@ const Auth = () => {
             fieldState: { error },
           }) => {
             return (
-              <View className="flex flex-row py-2">
+              <View className="flex flex-row p-2">
                 <TextInput
-                  placeholder="Password"
+                  label="Password"
                   onBlur={onBlur}
                   value={value}
-                  secureTextEntry
+                  secureTextEntry={passwordVisible}
                   onChangeText={onChange}
-                  className="border border-black bg-gray-200 flex-1 text-center rounded-full py-2"
+                  mode="outlined"
+                  right={
+                    <TextInput.Icon
+                      icon={passwordVisible ? "eye" : "eye-off"}
+                      onPress={() => setPasswordVisible(!passwordVisible)}
+                    />
+                  }
+                  className=" flex-1 rounded-full"
                 />
               </View>
             );
@@ -169,14 +178,24 @@ const Auth = () => {
             fieldState: { error },
           }) => {
             return (
-              <View className="flex flex-row py-2">
+              <View className="flex flex-row p-2">
                 <TextInput
-                  placeholder="Confirm Password"
+                  label="Confirm Password"
                   onBlur={onBlur}
                   value={value}
-                  secureTextEntry
+                  secureTextEntry={passwordVisibledouble}
                   onChangeText={onChange}
-                  className="border border-black bg-gray-200 flex-1 text-center rounded-full py-2"
+                  mode="outlined"
+                  activeOutlineColor="black"
+                  right={
+                    <TextInput.Icon
+                      icon={passwordVisibledouble ? "eye" : "eye-off"}
+                      onPress={() =>
+                        setPasswordVisibledouble(!passwordVisibledouble)
+                      }
+                    />
+                  }
+                  className="flex-1 rounded-full"
                 />
               </View>
             );
