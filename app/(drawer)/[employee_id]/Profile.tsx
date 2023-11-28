@@ -54,7 +54,7 @@ const Profile = () => {
         <View className="py-8">
           <View className="flex-col space-x-2 px-20 py-4">
             <TextInput
-              label="Name"
+              label="👤Name"
               value={name}
               editable={isEditable}
               mode="outlined"
@@ -63,7 +63,7 @@ const Profile = () => {
           </View>
           <View className="flex-col space-x-2 px-20 py-4">
             <TextInput
-              label="Email"
+              label="📧Email"
               value={email}
               editable={isEditable}
               mode="outlined"
@@ -72,7 +72,7 @@ const Profile = () => {
           </View>
           <View className="flex-col space-x-2 px-20 py-4">
             <TextInput
-              label="Phone Number"
+              label="📞Phone Number"
               value={phoneNumber}
               editable={isEditable}
               mode="outlined"

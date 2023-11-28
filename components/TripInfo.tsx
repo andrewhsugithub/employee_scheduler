@@ -2,7 +2,7 @@
 import { Text, SafeAreaView, View, Pressable } from "react-native";
 import QRCodeGenerator from "./QRCodeGenerator";
 import { styled } from "nativewind";
-import Info from "./Trips/Info";
+import Info from "./trips/Info";
 
 const StyledPressable = styled(Pressable);
 
@@ -19,7 +19,7 @@ const TripInfo = () => {
         <Text>Trip Info: </Text>
       </Pressable>
       <Info
-        id={Math.random() * 100000 + ""}
+        name={Math.random() * 100000 + ""}
         show={toggleModal}
         handleShow={(showModal: boolean) => setToggleModal(showModal)}
       />

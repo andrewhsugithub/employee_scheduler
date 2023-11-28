@@ -20,6 +20,7 @@ import {
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import { useEffect, useState } from "react";
+import { Zocial, Octicons } from "@expo/vector-icons";
 
 // const phoneUtil = PhoneNumberUtil.getInstance();
 
@@ -57,9 +58,11 @@ const SignIn = () => {
   const [text, setText] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(true);
   return (
-    <SafeAreaView className="h-screen flex items-center justify-center">
+    <SafeAreaView className="h-screen flex items-center justify-center ">
       <View className="h-full flex-1 w-1/2">
-        <Text className="text-2xl text-black font-extrabold">Sign In Form</Text>
+        <Text className="text-2xl text-black font-extrabold mt-64">
+          Sign In Form
+        </Text>
         <Controller
           control={control}
           name="email"
@@ -70,7 +73,7 @@ const SignIn = () => {
             return (
               <View className="flex flex-row p-2">
                 <TextInput
-                  label="Email"
+                  label={"📫Email"}
                   onBlur={onBlur}
                   keyboardType="email-address"
                   value={value}
@@ -94,7 +97,7 @@ const SignIn = () => {
             return (
               <View className="flex flex-row p-2 ">
                 <TextInput
-                  label="Password"
+                  label="🔒Password"
                   onBlur={onBlur}
                   value={value}
                   secureTextEntry={passwordVisible}
@@ -106,7 +109,7 @@ const SignIn = () => {
                       onPress={() => setPasswordVisible(!passwordVisible)}
                     />
                   }
-                  className=" flex-1 rounded-full"
+                  className=" flex-1 rounded-full mb-8"
                 />
               </View>
             );
@@ -115,7 +118,7 @@ const SignIn = () => {
         {errors?.password?.message && <Text>{errors?.password?.message}</Text>}
 
         <Pressable
-          className="bg-green-500 p-4 rounded-full items-center"
+          className="bg-green-500 p-4 rounded-full items-center mb-3"
           onPress={handleSubmit(handleSignIn)}
         >
           {isSubmitting ? (

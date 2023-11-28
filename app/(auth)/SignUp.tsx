@@ -95,7 +95,9 @@ const Auth = () => {
   return (
     <SafeAreaView className="h-screen flex items-center justify-center">
       <View className="h-full flex-1 w-1/2">
-        <Text className="text-2xl text-black font-extrabold">Sign Up Form</Text>
+        <Text className="text-2xl text-black font-extrabold mt-32">
+          Sign Up Form
+        </Text>
 
         <Controller
           control={control}
@@ -107,7 +109,7 @@ const Auth = () => {
             return (
               <View className="flex flex-row p-2">
                 <TextInput
-                  label="Name"
+                  label="👤Name"
                   onBlur={onBlur}
                   value={value}
                   mode="outlined"
@@ -128,7 +130,7 @@ const Auth = () => {
             return (
               <View className="flex flex-row p-2">
                 <TextInput
-                  label="Email"
+                  label="📧Email"
                   onBlur={onBlur}
                   value={value}
                   inputMode="email"
@@ -151,7 +153,7 @@ const Auth = () => {
             return (
               <View className="flex flex-row p-2">
                 <TextInput
-                  label="Password"
+                  label="🔒Password"
                   onBlur={onBlur}
                   value={value}
                   secureTextEntry={passwordVisible}
@@ -180,7 +182,7 @@ const Auth = () => {
             return (
               <View className="flex flex-row p-2">
                 <TextInput
-                  label="Confirm Password"
+                  label="🔒Confirm Password"
                   onBlur={onBlur}
                   value={value}
                   secureTextEntry={passwordVisibledouble}
@@ -195,7 +197,7 @@ const Auth = () => {
                       }
                     />
                   }
-                  className="flex-1 rounded-full"
+                  className="flex-1 rounded-full mb-4"
                 />
               </View>
             );
@@ -222,7 +224,7 @@ const Auth = () => {
         {!valid && <Text>Phone number is not valid</Text>}
 
         <Pressable
-          className="bg-green-500 p-4 rounded-full items-center"
+          className="bg-green-500 p-4 rounded-full items-center mt-6 mb-6"
           onPress={handleSubmit(
             (data) => {
               const checkValid =

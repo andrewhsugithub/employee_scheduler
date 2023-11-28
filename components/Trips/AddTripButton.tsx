@@ -1,7 +1,7 @@
 ﻿﻿import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import RegisterForm from "./RegisterForm";
+import RegisterTrip from "./RegisterTrip";
 
 interface AddTripButtonProps {
   captainName: string;
@@ -21,7 +21,7 @@ const AddTripButton = ({ captainName }: AddTripButtonProps) => {
           <Text className="font-bold text-white text-xl">Add New Trip</Text>
         </View>
       </Pressable>
-      <RegisterForm
+      <RegisterTrip
         show={showModal}
         captainName={captainName}
         handleShow={(showModal: boolean) => setShowModal(showModal)}

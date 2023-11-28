@@ -5,7 +5,7 @@ import { DrawerActions, DrawerStatus } from "@react-navigation/native";
 import { Text, Pressable, StyleProp, ViewStyle } from "react-native";
 import * as ScreenOrientation from "expo-screen-orientation";
 import { Feather } from "@expo/vector-icons";
-import DrawerContent from "@/components/Drawer/DrawerContent";
+import DrawerContent from "@/components/drawer/DrawerContent";
 import { getAuth, signOut } from "firebase/auth";
 
 export default function DrawerLayout() {

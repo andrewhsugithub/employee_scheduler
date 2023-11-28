@@ -1,8 +1,16 @@
 ﻿import { useState } from "react";
-import { Avatar, Button, Card, Title, Paragraph } from "react-native-paper";
+import {
+  Avatar,
+  Button,
+  Card,
+  Title,
+  Paragraph,
+  ProgressBar,
+} from "react-native-paper";
 import { Entypo } from "@expo/vector-icons";
-import TripInfo from "../TripInfo";
 import { Pressable, View, Text } from "react-native";
+import TripInfo from "@/components/TripInfo";
+import InfoButton from "./InfoButton";
 
 interface TripCardProps {
   tripName: string;
@@ -42,6 +50,14 @@ function subtractDates(date1: Date, date2: Date) {
   return formattedTime.trim(); // Remove leading/trailing spaces
 }
 
+const getProgress = (startDate: Date, endDate: Date) => {
+  const millisecondsDiff = new Date().getTime() - startDate.getTime();
+  if (millisecondsDiff < 0) return 0; // Trip hasn't started yet
+  const interval = endDate.getTime() - startDate.getTime();
+  const progress = millisecondsDiff / interval;
+  return progress;
+};
+
 const TripCard = ({
   tripName,
   captainName,
@@ -55,6 +71,7 @@ const TripCard = ({
   const [expanded, setExpanded] = useState(false);
   const [showTripInfo, setShowTripInfo] = useState(false);
   const tripInterval = subtractDates(new Date(tripEnd), new Date(tripFrom));
+  const progress = getProgress(new Date(tripFrom), new Date(tripEnd));
 
   return (
     <View className="p-3 shadow-xl">
@@ -69,27 +86,12 @@ const TripCard = ({
           title={`Trip Name: ${tripName}`}
           subtitle={`Captain: ${captainName}`}
           right={() => (
-            <>
-              {expanded && (
-                <View className="flex items-center">
-                  <Pressable onPress={() => setShowTripInfo(true)}>
-                    <Text>Trip Info</Text>
-                    {/* {showTripInfo && <TripInfo />} */}
-                  </Pressable>
-                  <Pressable onPress={() => {}}>
-                    {/* <TripInfo /> */}
-                    <Text>Start Trip</Text>
-                  </Pressable>
-                  <Pressable onPress={() => {}}>
-                    {/* <TripInfo /> */}
-                    <Text>Edit</Text>
-                  </Pressable>
-                </View>
-              )}
-              <Button onPress={() => setExpanded(!expanded)}>
-                <Entypo name="info-with-circle" size={20} color="black" />
-              </Button>
-            </>
+            <InfoButton
+              expanded={expanded}
+              handleExpand={(expanded: boolean) => setExpanded(!expanded)}
+              captainName={captainName}
+              tripName={tripName}
+            />
           )}
         />
         <Card.Content>
@@ -101,6 +103,7 @@ const TripCard = ({
           <Paragraph className="text-slate-500">
             Location: {tripLocation}
           </Paragraph>
+          <ProgressBar progress={progress} color={"blue"} />
         </Card.Content>
       </Card>
     </View>

@@ -1,5 +1,5 @@
-﻿import AddTripButton from "@/components/Trips/AddTripButton";
-import Info from "@/components/Trips/Info";
+﻿import AddTripButton from "@/components/trips/AddTripButton";
+import Info from "@/components/trips/Info";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { getAuth } from "firebase/auth";
 import { useState } from "react";
@@ -35,7 +35,7 @@ const AcceptTrips = () => {
                 <Text className="text-xl">Info</Text>
               </Pressable>
               <Info
-                id={Math.random() * 100000 + ""}
+                name={Math.random() * 100000 + ""}
                 show={toggleModal}
                 handleShow={(showModal: boolean) => setToggleModal(showModal)}
               />

@@ -26,7 +26,7 @@ const PickDate = ({ onChange, value }: PickDateProps) => {
 
   return (
     <View>
-      <Pressable className="bg-white " onPress={() => setShow(() => !show)}>
+      <Pressable onPress={() => setShow(() => !show)}>
         <Text className="text-blue-400">
           <Text className="rounded-full">Set Date & Time:{"\t"}</Text>
           <Text className="text-black">{value.toLocaleString()}</Text>
