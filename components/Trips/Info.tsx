@@ -22,7 +22,7 @@ const Info = ({ name, show, handleShow }: TripProps) => {
       <View
         className={`absolute bg-transparent z-10 right-0 left-0 top-0 bottom-0 flex-1 items-center justify-center`}
       >
-        <View className={`px-5 rounded-2xl bg-gray-400 w-4/5 h-3/5 `}>
+        <View className={`px-5 rounded-2xl bg-gray-400 w-3/5 h-3/5 `}>
           <Text className="text-center font-bold text-2xl">
             info of trip{name}
           </Text>

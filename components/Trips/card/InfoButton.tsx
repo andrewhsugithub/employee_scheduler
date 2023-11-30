@@ -27,42 +27,44 @@ const InfoButton = ({
   return (
     <>
       {expanded && (
-        <View className="flex items-center">
-          <Pressable
-            onPress={() => setShowTripInfo(true)}
-            className="bg-blue-300 px-7 rounded-xl py-2"
-          >
-            <Text>Trip Info</Text>
-            <Info
-              name={tripName}
-              show={showTripInfo}
-              handleShow={(showModal: boolean) => setShowTripInfo(showModal)}
-            />
-          </Pressable>
-          <Pressable
-            onPress={() => setShowRollCall(true)}
-            className="bg-blue-300 px-7 rounded-xl py-2"
-          >
-            {/* <TripInfo /> */}
-            <Text>Roll Call</Text>
-            <Rollcall
-              show={showRollCall}
-              handleShow={(showModal: boolean) => setShowRollCall(showModal)}
-            />
-          </Pressable>
-          <Pressable
-            onPress={() => {
-              setShowEdit(true);
-            }}
-            className="bg-blue-300 px-7 rounded-xl py-2"
-          >
-            <Text>Edit</Text>
-            <RegisterTrip
-              show={showEdit}
-              handleShow={setShowEdit}
-              captainName={captainName}
-            />
-          </Pressable>
+        <View className="py-2">
+          <View className="flex items-center space-y-1">
+            <Pressable
+              onPress={() => setShowTripInfo(true)}
+              className="bg-blue-300 px-7 rounded-xl py-2 border-2 border-blue-700 p-2"
+            >
+              <Text>Trip Info</Text>
+              <Info
+                name={tripName}
+                show={showTripInfo}
+                handleShow={(showModal: boolean) => setShowTripInfo(showModal)}
+              />
+            </Pressable>
+            <Pressable
+              onPress={() => setShowRollCall(true)}
+              className="bg-blue-300 px-7 rounded-xl py-2 border-2 border-blue-700 p-2"
+            >
+              {/* <TripInfo /> */}
+              <Text>Roll Call</Text>
+              <Rollcall
+                show={showRollCall}
+                handleShow={(showModal: boolean) => setShowRollCall(showModal)}
+              />
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                setShowEdit(true);
+              }}
+              className="bg-blue-300 px-7 rounded-xl py-4 border-2 border-blue-700 p-2"
+            >
+              <Text>Edit</Text>
+              <RegisterTrip
+                show={showEdit}
+                handleShow={setShowEdit}
+                captainName={captainName}
+              />
+            </Pressable>
+          </View>
         </View>
       )}
       <Button onPress={() => handleExpand(expanded)}>

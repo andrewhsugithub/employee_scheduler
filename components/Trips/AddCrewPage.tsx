@@ -72,13 +72,7 @@ const AddCrewPage = ({
             onPress={() => {
               prepend({
                 crew_name: "",
-                crew_job: [
-                  {
-                    jobName: "",
-                    startDate: new Date(),
-                    endDate: new Date(),
-                  },
-                ],
+                crew_job: [],
               });
             }}
             className="bg-blue-400 p-3 rounded-full"

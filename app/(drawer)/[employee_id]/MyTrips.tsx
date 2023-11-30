@@ -10,15 +10,34 @@ import {
 import { styled } from "nativewind";
 import AddTripButton from "@/components/trips/AddTripButton";
 import TripCard from "@/components/trips/card/TripCard";
+import { useEffect, useState } from "react";
+import { getAuth } from "firebase/auth";
+import { db } from "@/lib/firebase";
+import { doc, onSnapshot } from "firebase/firestore";
 
 const StyledPressable = styled(Pressable);
 const StyledText = styled(Text);
 
-const trips = ["trip1", "trip2", "trip3", "trip4", "trip5"];
-
 const CrewMember = () => {
   const params = useLocalSearchParams();
   const router = useRouter();
+  const [trips, setTrips] = useState<string[]>([]);
+  const [ongoingTrips, setOngoingTrips] = useState<string[]>([]);
+  const [futureTrips, setFutureTrips] = useState<string[]>([]);
+  const captainId = getAuth().currentUser?.uid;
+
+  useEffect(() => {
+    const userRef = doc(db, "users", captainId!);
+    const unsubscribe = onSnapshot(
+      userRef,
+      { includeMetadataChanges: true },
+      (userDoc) => {
+        setTrips(userDoc.data()?.trips);
+        console.log("trips: ", userDoc.data()?.trips);
+      }
+    );
+    return unsubscribe;
+  }, []);
 
   return (
     <SafeAreaView className="h-full">
@@ -26,33 +45,16 @@ const CrewMember = () => {
         <View className="p-3">
           <Text className="font-extrabold text-2xl py-4">Ongoing: </Text>
           <View className="flex-row flex-wrap">
-            {trips.map((trip) => (
-              <TripCard
-                tripName="Hello"
-                captainName="許榕安"
-                tripFrom={new Date("2023-01-01T10:00:00").toISOString()}
-                tripEnd={new Date().toISOString()}
-                tripLocation="Taipei"
-                isOngoing={true}
-                // tripId={Math.random() * 100000 + ""}
-                // key={trip.tripId}
-              />
+            {trips?.map((tripId) => (
+              <TripCard tripId={tripId} key={tripId} />
             ))}
           </View>
         </View>
         <View className="p-3">
           <Text className="font-extrabold text-2xl py-4">Future: </Text>
           <View className="flex-row flex-wrap">
-            {trips.map((trip) => (
-              <TripCard
-                tripName="Hello"
-                captainName="許榕安"
-                tripFrom={new Date("2023-01-01T10:00:00").toISOString()}
-                tripEnd={new Date().toISOString()}
-                tripLocation="Taipei"
-                isOngoing={true}
-                // key={trip.tripId}
-              />
+            {trips?.map((tripId) => (
+              <TripCard tripId={tripId} key={tripId} />
             ))}
           </View>
         </View>

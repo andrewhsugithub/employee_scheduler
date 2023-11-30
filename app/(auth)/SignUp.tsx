@@ -21,6 +21,7 @@ import {
   updatePhoneNumber,
   updateProfile,
 } from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // const phoneUtil = PhoneNumberUtil.getInstance();
 
@@ -65,17 +66,15 @@ const Auth = () => {
 
       await sendEmailVerification(userCredential.user);
       alert("Sent verification email, please verify your email to sign in");
+
+      await AsyncStorage.setItem("email", data.email.trim());
+      await AsyncStorage.setItem("password", data.password);
+      await AsyncStorage.setItem("username", data.username);
     } catch (err) {
       console.log(err);
       alert(err);
     }
 
-    // const usersRef = collection(db, "users");
-    // try {
-    //   await addDoc(usersRef, user);
-    // } catch (err) {
-    //   console.log(err);
-    // }
     setIsSubmitting(false);
     router.push(`/(auth)/SignIn`);
   };
@@ -89,7 +88,6 @@ const Auth = () => {
   } = useForm<AuthFormSchema>({
     resolver: zodResolver(AuthSchema),
   });
-  const [text, setText] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(true);
   const [passwordVisibledouble, setPasswordVisibledouble] = useState(true);
   return (
@@ -113,6 +111,7 @@ const Auth = () => {
                   onBlur={onBlur}
                   value={value}
                   mode="outlined"
+                  onChangeText={onChange}
                   className=" flex-1 rounded-full"
                 />
               </View>
@@ -234,10 +233,11 @@ const Auth = () => {
               if (!checkValid) return;
               SignUp(data);
             },
-            () => {
+            (data) => {
               const checkValid =
                 phoneInput.current?.isValidNumber(formattedValue);
               setValid(checkValid!);
+              console.log("data error:", data);
               setSubmitted(true);
             }
           )}

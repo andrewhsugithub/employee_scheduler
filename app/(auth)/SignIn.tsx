@@ -21,16 +21,43 @@ import {
 } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { Zocial, Octicons } from "@expo/vector-icons";
+import * as LocalAuthentication from "expo-local-authentication";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // const phoneUtil = PhoneNumberUtil.getInstance();
 
 const SignIn = () => {
   const router = useRouter();
+  const user = getAuth().currentUser;
+
+  const [isBiometricSupported, setIsBiometricSupported] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Check if hardware supports biometrics
+  useEffect(() => {
+    (async () => {
+      const compatible = await LocalAuthentication.hasHardwareAsync();
+      setIsBiometricSupported(compatible);
+    })();
+  });
+
+  async function onAuthenticate() {
+    const auth = await LocalAuthentication.authenticateAsync({
+      promptMessage: "Authenticate",
+      fallbackLabel: "Enter Password",
+    });
+    setIsAuthenticated(auth.success);
+    await AsyncStorage.getItem("email");
+    await AsyncStorage.getItem("password");
+    const username = await AsyncStorage.getItem("username");
+    router.push(`/(drawer)/${username}/MyTrips`);
+  }
 
   useEffect(() => {
-    const user = getAuth().currentUser;
-    if (user) router.push(`/(drawer)/${user.displayName}/MyTrips`);
-    console.log("user: ", user);
+    onAuthenticate();
+    // if (user) router.push(`/(drawer)/${user.displayName}/MyTrips`);
+    // console.log("user: ", user);
+    // TODO : check if user is authenticated via firebase directly make it work offline with async storage
   }, []);
 
   // TODO: sign in process here

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { View, Text, StyleSheet, FlatList, Dimensions } from "react-native";
 import { Calendar, LocaleConfig } from "react-native-calendars";
 
 interface ExpandableCalendarProps {
@@ -47,44 +47,40 @@ const ExpandableCalendar: React.FC<ExpandableCalendarProps> = () => {
   const eventsData = [
     { time: "1:00 A.M. ~ 3:00 A.M.", job: "捕魚" },
     { time: "7:00 P.M. ~ 9:00 P.M.", job: "殺魚" },
+    { time: "7:00 P.M. ~ 9:00 P.M.", job: "殺魚" },
+    { time: "7:00 P.M. ~ 9:00 P.M.", job: "殺魚" },
+    { time: "7:00 P.M. ~ 9:00 P.M.", job: "殺魚" },
+    { time: "7:00 P.M. ~ 9:00 P.M.", job: "殺魚" },
+    { time: "7:00 P.M. ~ 9:00 P.M.", job: "殺魚" },
+    { time: "7:00 P.M. ~ 9:00 P.M.", job: "殺魚" },
+    { time: "7:00 P.M. ~ 9:00 P.M.", job: "殺魚" },
+    { time: "7:00 P.M. ~ 9:00 P.M.", job: "殺魚" },
+
     //舉例的假資料
   ];
 
   return (
-    <View
-      //style={styles.container}
-      className="flex flex-row space-x-12 h-4/5"
-    >
+    <View className="flex flex-row space-x-24 h-4/5 items-center px-8">
       {isExpanded && (
         <>
           <Calendar
-            className="w-full"
+            className=""
             onDayPress={(day) => {
               console.log("selected day", day);
               // 選日期
             }}
           />
-          <View className="w-2/5">
-            <Text
-              className="mb-2 text-center font-bold"
-              //style={styles.eventsHeader}
-            >
-              Working schedule
-            </Text>
-            <FlatList
-              data={eventsData}
-              keyExtractor={(item) => item.time}
-              renderItem={({ item }) => (
-                <View
-                  //style={styles.eventItem}
-                  className="bg-blue-200 px-2 py-2 mb-4 rounded-2xl w-4/5 "
-                >
-                  <Text className="text-center">{item.time}</Text>
-                  <Text className="text-center">{item.job}</Text>
-                </View>
-              )}
-            />
-          </View>
+          <FlatList
+            className=""
+            data={eventsData}
+            keyExtractor={(item) => item.time}
+            renderItem={({ item }) => (
+              <View className="bg-blue-200 px-2 py-2 mb-4 rounded-2xl ">
+                <Text className="text-center">{item.time}</Text>
+                <Text className="text-center">{item.job}</Text>
+              </View>
+            )}
+          />
         </>
       )}
     </View>

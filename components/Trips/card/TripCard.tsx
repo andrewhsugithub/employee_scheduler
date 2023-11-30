@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+﻿import { useEffect, useState } from "react";
 import {
   Avatar,
   Button,
@@ -11,18 +11,16 @@ import { Entypo } from "@expo/vector-icons";
 import { Pressable, View, Text } from "react-native";
 import TripInfo from "@/components/TripInfo";
 import InfoButton from "./InfoButton";
+import { DocumentData, doc, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 interface TripCardProps {
-  tripName: string;
-  captainName: string;
-  tripFrom: string;
-  tripEnd: string;
-  tripLocation: string;
-  isOngoing: boolean;
+  tripId: string;
 }
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
+
   const formattedDate = new Intl.DateTimeFormat("en-us", {
     weekday: "short",
     year: "numeric",
@@ -51,6 +49,7 @@ function subtractDates(date1: Date, date2: Date) {
 }
 
 const getProgress = (startDate: Date, endDate: Date) => {
+  // console.log("date:", startDate, endDate);
   const millisecondsDiff = new Date().getTime() - startDate.getTime();
   if (millisecondsDiff < 0) return 0; // Trip hasn't started yet
   const interval = endDate.getTime() - startDate.getTime();
@@ -58,20 +57,31 @@ const getProgress = (startDate: Date, endDate: Date) => {
   return progress;
 };
 
-const TripCard = ({
-  tripName,
-  captainName,
-  tripFrom,
-  tripEnd,
-  tripLocation,
-  isOngoing,
-}: TripCardProps) => {
-  const startDate = formatDate(tripFrom);
-  const endDate = formatDate(tripEnd);
+const TripCard = ({ tripId }: TripCardProps) => {
+  const [trip, setTrip] = useState<DocumentData>();
+  const [formattedStartingDate, setFormattedStartingDate] = useState<string>();
+  const [formattedEndingDate, setFormattedEndingDate] = useState<string>();
   const [expanded, setExpanded] = useState(false);
-  const [showTripInfo, setShowTripInfo] = useState(false);
-  const tripInterval = subtractDates(new Date(tripEnd), new Date(tripFrom));
-  const progress = getProgress(new Date(tripFrom), new Date(tripEnd));
+  const [tripInterval, setTripInterval] = useState<string>();
+  const [progress, setProgress] = useState<number>(0);
+
+  useEffect(() => {
+    const tripRef = doc(db, "trips", tripId!);
+    const unsubscribe = onSnapshot(
+      tripRef,
+      { includeMetadataChanges: true },
+      (tripDoc) => {
+        setTrip(tripDoc.data());
+        const startingDate = tripDoc.data()?.startDate.toDate();
+        const endingDate = tripDoc.data()?.endDate.toDate();
+        setFormattedStartingDate(formatDate(startingDate!.toISOString()));
+        setFormattedEndingDate(formatDate(endingDate!.toISOString()));
+        setTripInterval(subtractDates(endingDate!, startingDate!));
+        setProgress(getProgress(startingDate!, endingDate!));
+      }
+    );
+    return unsubscribe;
+  }, []);
 
   return (
     <View className="p-3 shadow-xl">
@@ -83,25 +93,29 @@ const TripCard = ({
           />
         </View>
         <Card.Title
-          title={`Trip Name: ${tripName}`}
-          subtitle={`Captain: ${captainName}`}
+          title={`Trip Name: ${trip?.trip_name}`}
+          subtitle={`Captain: ${trip?.captain_name}`}
           right={() => (
             <InfoButton
               expanded={expanded}
               handleExpand={(expanded: boolean) => setExpanded(!expanded)}
-              captainName={captainName}
-              tripName={tripName}
+              captainName={trip?.captain_name}
+              tripName={trip?.trip_name}
             />
           )}
         />
         <Card.Content>
-          <Paragraph className="text-slate-500">Start: {startDate}</Paragraph>
-          <Paragraph className="text-slate-500">End: {endDate}</Paragraph>
+          <Paragraph className="text-slate-500">
+            Start: {formattedStartingDate}
+          </Paragraph>
+          <Paragraph className="text-slate-500">
+            End: {formattedEndingDate}
+          </Paragraph>
           <Paragraph className="text-slate-500">
             Interval: {tripInterval}
           </Paragraph>
           <Paragraph className="text-slate-500">
-            Location: {tripLocation}
+            Location: {trip?.location}
           </Paragraph>
           <ProgressBar progress={progress} color={"blue"} />
         </Card.Content>
