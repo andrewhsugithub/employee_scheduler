@@ -84,7 +84,7 @@ const TripCard = ({ tripId }: TripCardProps) => {
   }, []);
 
   return (
-    <View className="p-3 shadow-xl">
+    <View className="p-3">
       <Card className="bg-blue-200">
         <View className="">
           <Card.Cover

@@ -28,7 +28,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const SignIn = () => {
   const router = useRouter();
-  const user = getAuth().currentUser;
 
   const [isBiometricSupported, setIsBiometricSupported] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -42,31 +41,47 @@ const SignIn = () => {
   });
 
   async function onAuthenticate() {
-    const auth = await LocalAuthentication.authenticateAsync({
+    const localAuth = await LocalAuthentication.authenticateAsync({
       promptMessage: "Authenticate",
       fallbackLabel: "Enter Password",
     });
-    setIsAuthenticated(auth.success);
-    await AsyncStorage.getItem("email");
-    await AsyncStorage.getItem("password");
-    const username = await AsyncStorage.getItem("username");
-    router.push(`/(drawer)/${username}/MyTrips`);
+    setIsAuthenticated(localAuth.success);
+    const email = await AsyncStorage.getItem("email");
+    const pass = await AsyncStorage.getItem("password");
+    await signInWithEmailAndPassword(auth, email!, pass!)
+      .then(async (userCredential) => {
+        const user = userCredential.user;
+        if (!user.emailVerified) alert("Please verify your email first");
+        else {
+          // await AsyncStorage.setItem("username", user!.displayName!);
+          router.push(`/(drawer)/${user.displayName}/MyTrips`);
+        }
+      })
+      .catch((err) => {
+        alert(err);
+      });
   }
 
   useEffect(() => {
     onAuthenticate();
-    // if (user) router.push(`/(drawer)/${user.displayName}/MyTrips`);
-    // console.log("user: ", user);
+    const user = getAuth().currentUser;
+    if (user) router.push(`/(drawer)/${user.displayName}/MyTrips`);
+    console.log("user: ", user);
     // TODO : check if user is authenticated via firebase directly make it work offline with async storage
   }, []);
 
   // TODO: sign in process here
   const handleSignIn = async (data: SignInFormSchema) => {
     await signInWithEmailAndPassword(auth, data.email.trim(), data.password)
-      .then((userCredential) => {
+      .then(async (userCredential) => {
         const user = userCredential.user;
         if (!user.emailVerified) alert("Please verify your email first");
-        else router.push(`/(drawer)/${user.displayName}/MyTrips`);
+        else {
+          await AsyncStorage.setItem("email", data.email.trim());
+          await AsyncStorage.setItem("password", data.password);
+          await AsyncStorage.setItem("username", user!.displayName!);
+          router.push(`/(drawer)/${user.displayName}/MyTrips`);
+        }
       })
       .catch((err) => {
         alert(err);

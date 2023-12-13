@@ -1,47 +1,47 @@
-﻿import DateTimePicker, {
-  DateTimePickerEvent,
-} from "@react-native-community/datetimepicker";
-import { useState } from "react";
-import { Pressable, View, Text } from "react-native";
+﻿import { useState } from "react";
+import { Pressable, View, Text, Modal, TouchableOpacity } from "react-native";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { FontAwesome } from "@expo/vector-icons";
+import { TextInput } from "react-native-paper";
 
 interface PickDateProps {
   onChange: (...event: any[]) => void;
   value: Date;
+  label: string;
 }
 
-const PickDate = ({ onChange, value }: PickDateProps) => {
+const PickDate = ({ onChange, value, label }: PickDateProps) => {
   const [show, setShow] = useState(false);
-
-  const onChangeDate = (event: DateTimePickerEvent, date: Date | undefined) => {
-    const {
-      type,
-      nativeEvent: { timestamp },
-    } = event;
-
-    if (type === "set") {
-      onChange(date!);
-      // setShow(false);
-    }
+  const onChangeDate = (date: Date | undefined) => {
+    onChange(date!);
+    setShow(false);
   };
 
   return (
     <View>
-      <Pressable onPress={() => setShow(() => !show)}>
-        <Text className="text-blue-400">
-          <Text className="rounded-full">Set Date & Time:{"\t"}</Text>
-          <Text className="text-black">{value.toLocaleString()}</Text>
-        </Text>
-      </Pressable>
-      {show && (
-        <>
-          <DateTimePicker
-            value={value}
-            mode="datetime"
-            display="spinner"
-            onChange={onChangeDate}
-          />
-        </>
-      )}
+      {/* <Text className="text-blue-400"> */}
+      {/* <FontAwesome name="calendar" size={24} color="black" /> */}
+      {/* <Text className="text-black">
+        {"\t"}
+        {value.toLocaleString()}
+      </Text> */}
+      {/* </Text> */}
+      <TextInput
+        label={label}
+        value={value.toLocaleString()}
+        mode="outlined"
+        className="flex-1"
+        onPressIn={() => setShow(() => !show)}
+        left={<TextInput.Icon icon="calendar" />}
+        editable={false}
+      />
+
+      <DateTimePickerModal
+        isVisible={show}
+        mode="datetime"
+        onConfirm={onChangeDate}
+        onCancel={() => setShow(false)}
+      />
     </View>
   );
 };

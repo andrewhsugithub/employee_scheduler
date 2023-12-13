@@ -16,9 +16,8 @@ const DrawerProfile = () => {
 
   return (
     <View>
-      <View></View>
       <Pressable
-        className="rounded-2xl bg-sky-200 p-3 m-2"
+        className="rounded-2xl bg-sky-200 p-3 m-2  "
         onPress={() => setExpand(!expand)}
       >
         <View

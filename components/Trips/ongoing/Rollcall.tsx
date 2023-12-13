@@ -3,6 +3,7 @@ import { useState } from "react";
 import { SafeAreaView, View, Text, Pressable, Modal } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import QRCodeGenerator from "@/components/QRCodeGenerator";
+import { TextInput } from "react-native-paper";
 
 interface RollCallProps {
   show: boolean;
@@ -10,10 +11,17 @@ interface RollCallProps {
 }
 
 const RollCall = ({ show, handleShow }: RollCallProps) => {
-  const params = useLocalSearchParams();
   const router = useRouter();
-  const [countPeople, setCountPeople] = useState(0);
   const [showSchedule, setShowSchedule] = useState(false); //! is this redundant? we can use const instead of state
+  const [code, setCode] = useState("");
+
+  const handleVerify = (codeToVerify: string) => {
+    if (codeToVerify === code) {
+      setShowSchedule(true);
+    } else {
+      alert("Incorrect Code");
+    }
+  };
 
   return (
     <Modal animationType="slide" visible={show} transparent={true}>
@@ -23,11 +31,21 @@ const RollCall = ({ show, handleShow }: RollCallProps) => {
         <View className={`p-5 rounded-2xl bg-gray-400`}>
           {/* <Stack.Screen /> */}
           <Text>Roll Call</Text>
-          <Text>Hello crew of {params.trip_id}</Text>
           <Text>QR Code:</Text>
           <QRCodeGenerator id={Math.random() * 10000 + ""} />
           <Text>Verification Code</Text>
-          <View className="flex items-center justify-center">
+          <TextInput
+            label="Verification Code"
+            placeholder="Enter your password for this trip"
+            onChangeText={(text) => setCode(text)}
+          />
+          <Pressable
+            className="bg-green-500 p-4"
+            onPress={(code) => handleVerify}
+          >
+            <Text>點名</Text>
+          </Pressable>
+          {/* <View className="flex items-center justify-center">
             <Text className="text-blue-300">
               simulate people signing in if more than 10 people then means all
               present
@@ -50,7 +68,7 @@ const RollCall = ({ show, handleShow }: RollCallProps) => {
               </Pressable>
             )}
             <Text>Current People Signed In: {countPeople}</Text>
-          </View>
+          </View> */}
           <Pressable
             onPress={() => handleShow(false)}
             className="absolute top-2 right-2"

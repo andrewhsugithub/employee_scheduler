@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, FlatList, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Dimensions,
+  ScrollView,
+} from "react-native";
 import { Calendar, LocaleConfig } from "react-native-calendars";
 
 interface ExpandableCalendarProps {
@@ -8,6 +15,41 @@ interface ExpandableCalendarProps {
 
 const ExpandableCalendar: React.FC<ExpandableCalendarProps> = () => {
   const [isExpanded, setIsExpanded] = useState(true);
+
+  const [selectedDate, setSelectedDate] = useState("");
+  const [showFlatList, setShowFlatList] = useState(false);
+
+  const [markedDates, setMarkedDates] = useState({
+    "2023-12-02": {
+      startingDates: true,
+      selected: true,
+      marked: true,
+      selectedColor: "red",
+      color: "red",
+    },
+    "2023-12-03": {
+      selected: true,
+      marked: true,
+      selectedColor: "red",
+      color: "red",
+    },
+    "2023-12-04": {
+      disabled: true,
+      marked: true,
+      selected: true,
+      selectedColor: "blue",
+      color: "red",
+      endingDates: true,
+    },
+    //這裡放此trip包含哪幾天
+  });
+
+  const onDayPress = (day: { dateString: React.SetStateAction<string> }) => {
+    // 切换 FlatList 是否隱藏
+    setShowFlatList(true);
+    // 更新點選的日期
+    setSelectedDate(day.dateString);
+  };
 
   LocaleConfig.locales["en"] = {
     monthNames: [
@@ -44,43 +86,60 @@ const ExpandableCalendar: React.FC<ExpandableCalendarProps> = () => {
 
   LocaleConfig.defaultLocale = "en";
 
-  const eventsData = [
-    { time: "1:00 A.M. ~ 3:00 A.M.", job: "捕魚" },
-    { time: "7:00 P.M. ~ 9:00 P.M.", job: "殺魚" },
-    { time: "7:00 P.M. ~ 9:00 P.M.", job: "殺魚" },
-    { time: "7:00 P.M. ~ 9:00 P.M.", job: "殺魚" },
-    { time: "7:00 P.M. ~ 9:00 P.M.", job: "殺魚" },
-    { time: "7:00 P.M. ~ 9:00 P.M.", job: "殺魚" },
-    { time: "7:00 P.M. ~ 9:00 P.M.", job: "殺魚" },
-    { time: "7:00 P.M. ~ 9:00 P.M.", job: "殺魚" },
-    { time: "7:00 P.M. ~ 9:00 P.M.", job: "殺魚" },
-    { time: "7:00 P.M. ~ 9:00 P.M.", job: "殺魚" },
+  type EventsData = {
+    [date: string]: Array<{ time: string; job: string }>;
+  };
 
-    //舉例的假資料
-  ];
+  const eventsData: EventsData = {
+    "2023-12-02": [
+      { time: "1:00 A.M. ~ 3:00 A.M.", job: "捕魚" },
+      { time: "3:00 P.M. ~ 4:00 P.M.", job: "殺魚" },
+    ],
+    "2023-12-03": [
+      { time: "4:00 P.M. ~ 5:00 P.M.", job: "殺魚" },
+      { time: "5:00 P.M. ~ 6:00 P.M.", job: "殺魚" },
+    ],
+    "2023-12-04": [
+      { time: "1:00 A.M. ~ 3:00 A.M.", job: "捕魚" },
+      { time: "3:00 P.M. ~ 4:00 P.M.", job: "殺魚" },
+    ],
+    //這裡放那天的工作schedule
+  };
 
   return (
-    <View className="flex flex-row space-x-24 h-4/5 items-center px-8">
+    <View className="flex flex-row space-x-24 h-full items-center px-8">
       {isExpanded && (
         <>
-          <Calendar
-            className=""
-            onDayPress={(day) => {
-              console.log("selected day", day);
-              // 選日期
-            }}
-          />
-          <FlatList
-            className=""
-            data={eventsData}
-            keyExtractor={(item) => item.time}
-            renderItem={({ item }) => (
-              <View className="bg-blue-200 px-2 py-2 mb-4 rounded-2xl ">
-                <Text className="text-center">{item.time}</Text>
-                <Text className="text-center">{item.job}</Text>
-              </View>
+          <ScrollView
+            automaticallyAdjustContentInsets={false}
+            horizontal={true}
+            className="bg-white"
+          >
+            <Calendar
+              markingType={"period"}
+              markedDates={markedDates}
+              onDayPress={onDayPress}
+              style={{
+                height: "90%",
+                width: 400,
+              }}
+              theme={{
+                calendarBackground: "#ffffff",
+              }}
+            />
+            {showFlatList && selectedDate && (
+              <FlatList
+                data={eventsData[selectedDate]}
+                keyExtractor={(item) => item.time}
+                renderItem={({ item }) => (
+                  <View className="bg-blue-200 px-2 py-2 mb-4 rounded-2xl ">
+                    <Text className="text-center">{item.time}</Text>
+                    <Text className="text-center">{item.job}</Text>
+                  </View>
+                )}
+              />
             )}
-          />
+          </ScrollView>
         </>
       )}
     </View>

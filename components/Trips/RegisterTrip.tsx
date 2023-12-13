@@ -12,10 +12,14 @@ import {
   collection,
   doc,
   updateDoc,
+  CollectionReference,
+  getDoc,
+  getDocs,
+  onSnapshot,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { AntDesign, MaterialIcons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   RegisterFormSchema,
@@ -28,6 +32,8 @@ import { getAuth } from "firebase/auth";
 import PickDate from "../PickDate";
 import AddCrewPage from "./AddCrewPage";
 import AddJobPage from "./AddJobPage";
+import JobForm from "../JobForm";
+import {} from "firebase/firestore";
 
 interface RegisterTripProps {
   show: boolean;
@@ -35,17 +41,51 @@ interface RegisterTripProps {
   handleShow: (showModal: boolean) => void;
 }
 
+interface User {
+  name: string;
+  id: string;
+}
+
 // TODO turn into realtime database and make sure referential integrity
 const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
   const [pageIndex, setPageIndex] = useState(0);
   const captainId = getAuth().currentUser?.uid;
+  const [users, setUsers] = useState<User[]>([]);
+
+  const getInitData = async (ref: CollectionReference) => {
+    const usersSnapshot = await getDocs(ref);
+    const userList: User[] = [];
+    usersSnapshot.forEach((user) => {
+      userList.push({ id: user.id, name: user.data().name });
+    });
+    setUsers(userList);
+  };
+
+  useEffect(() => {
+    const usersRef = collection(db, "users");
+    getInitData(usersRef);
+
+    const unsubscribe = onSnapshot(
+      usersRef,
+      { includeMetadataChanges: true },
+      (usersSnapshot) => {
+        const userList: User[] = [];
+        usersSnapshot.forEach((user) => {
+          userList.push({ id: user.id, name: user.data().name });
+        });
+        setUsers(userList);
+      }
+    );
+
+    return unsubscribe();
+  }, []);
 
   const registerTrip = async (data: RegisterFormSchema) => {
     // console.log("data: ", data);
 
     const trip = {
       trip_name: data.trip_name,
-      captain_name: data.captain_name,
+      captain_id: data.captain_id,
       captain_job: data.captain_job,
       location: data.location,
       startDate: data.startDate,
@@ -61,7 +101,19 @@ const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
 
       const userRef = doc(db, "users", captainId!);
       await updateDoc(userRef, {
-        trips: arrayUnion(addedTrip.id),
+        trips: arrayUnion({
+          id: addedTrip.id,
+          password: Math.random().toString(36).slice(-8),
+        }),
+      });
+      data.crew.map(async (crew: any) => {
+        const userRef = doc(db, "users", crew.crew_id!);
+        await updateDoc(userRef, {
+          trips: arrayUnion({
+            id: addedTrip.id,
+            password: Math.random().toString(36).slice(-8),
+          }),
+        });
       });
       console.log("success", trip);
     } catch (err) {
@@ -78,7 +130,7 @@ const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
   } = useForm<RegisterFormSchema>({
     resolver: zodResolver(RegisterSchema),
     defaultValues: {
-      captain_name: captainName,
+      captain_id: captainName,
     },
   });
 
@@ -93,13 +145,12 @@ const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
       {/* <View 
         className={`absolute bg-transparent z-10 right-0 left-0 top-0 bottom-0 flex-1 items-center justify-center`}
       > */}
-      <View className={`p-16 items-center justify-center flex-1 bg-red-500`}>
-        <ScrollView
-          showsVerticalScrollIndicator={false} // 隱藏垂直滾動條
-        >
+      <View className={`p-16 items-center justify-center flex-1 bg-white`}>
+        <ScrollView showsVerticalScrollIndicator={false}>
           <Text className=" text-center font-bold text-3xl py-5">
             Register Form
           </Text>
+
           <Controller
             control={control}
             name="trip_name"
@@ -124,10 +175,11 @@ const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
           {errors?.trip_name?.message && (
             <Text>{errors?.trip_name?.message}</Text>
           )}
+
           <View className="flex flex-row items-center py-4">
             <Controller
               control={control}
-              name="captain_name"
+              name="captain_id"
               render={({
                 field: { onChange, onBlur, value },
                 fieldState: { error },
@@ -136,7 +188,7 @@ const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
                   <View className="flex flex-row py-2">
                     <TextInput
                       label="Captain Name"
-                      // onBlur={onBlur}
+                      onBlur={onBlur}
                       value={value}
                       editable={false}
                       mode="outlined"
@@ -146,10 +198,11 @@ const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
                 );
               }}
             />
-            {errors?.captain_name?.message && (
-              <Text>{errors?.captain_name?.message}</Text>
+            {errors?.captain_id?.message && (
+              <Text>{errors?.captain_id?.message}</Text>
             )}
           </View>
+
           <Controller
             control={control}
             name="location"
@@ -158,7 +211,7 @@ const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
               fieldState: { error },
             }) => {
               return (
-                <View className="flex flex-row ">
+                <View className="flex flex-row">
                   <TextInput
                     label="Location"
                     onBlur={onBlur}
@@ -174,39 +227,50 @@ const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
           {errors?.location?.message && (
             <Text>{errors?.location?.message}</Text>
           )}
-          <Controller
-            control={control}
-            name="startDate"
-            render={({
-              field: { onChange, onBlur, value },
-              fieldState: { error },
-            }) => {
-              return (
-                <View className="flex flex-row p-2 justify-center">
-                  <PickDate onChange={onChange} value={value ?? new Date()} />
-                </View>
-              );
-            }}
-          />
-          {errors?.startDate?.message && (
-            <Text>{errors?.startDate?.message}</Text>
-          )}
-          <Controller
-            control={control}
-            name="endDate"
-            render={({
-              field: { onChange, onBlur, value },
-              fieldState: { error },
-            }) => {
-              return (
-                <View className="flex flex-row p-2 justify-center">
-                  <PickDate onChange={onChange} value={value ?? new Date()} />
-                </View>
-              );
-            }}
-          />
-          {errors?.endDate?.message && <Text>{errors?.endDate?.message}</Text>}
 
+          <View className="flex flex-row mx-4 my-8">
+            <Controller
+              control={control}
+              name="startDate"
+              render={({
+                field: { onChange, onBlur, value },
+                fieldState: { error },
+              }) => {
+                return (
+                  <View className="flex flex-row p-2 justify-left flex-1 rounded-full">
+                    <PickDate
+                      onChange={onChange}
+                      value={value ?? new Date()}
+                      label="Start Date"
+                    />
+                  </View>
+                );
+              }}
+            />
+            {errors?.startDate?.message && (
+              <Text>{errors?.startDate?.message}</Text>
+            )}
+            <Controller
+              control={control}
+              name="endDate"
+              render={({
+                field: { onChange, onBlur, value },
+                fieldState: { error },
+              }) => {
+                return (
+                  <View className="flex flex-row p-2 justify-center">
+                    <PickDate
+                      onChange={onChange}
+                      value={value ?? new Date()}
+                      label="End Date"
+                    />
+                  </View>
+                );
+              }}
+            />
+          </View>
+          {errors?.endDate?.message && <Text>{errors?.endDate?.message}</Text>}
+          <View className="h-4"></View>
           <View className="flex flex-row items-center">
             <AntDesign
               name="caretleft"
@@ -227,6 +291,7 @@ const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
                 fields={fields}
                 prepend={prepend}
                 remove={remove}
+                users={users}
               />
             </View>
             {/* ADD JOB FORM PAGE 2 */}
@@ -235,6 +300,7 @@ const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
                 control={control}
                 errors={errors}
                 crewArray={fields}
+                users={users}
               />
             </View>
             <AntDesign
@@ -245,24 +311,13 @@ const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
                 setPageIndex(() => {
                   return pageIndex === 1 ? pageIndex : pageIndex + 1;
                 });
-                prepend({
-                  crew_name: "",
-                  crew_job: [
-                    {
-                      jobName: "",
-                      startDate: new Date(),
-                      endDate: new Date(),
-                    },
-                  ],
-                });
-                remove(0);
               }}
             />
           </View>
-
           {errors?.location?.message && (
             <Text>{errors?.location?.message}</Text>
           )}
+
           <Pressable
             className="bg-blue-400 rounded-full p-3"
             onPress={handleSubmit(registerTrip, (data) =>

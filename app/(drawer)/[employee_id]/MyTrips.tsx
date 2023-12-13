@@ -13,7 +13,7 @@ import TripCard from "@/components/trips/card/TripCard";
 import { useEffect, useState } from "react";
 import { getAuth } from "firebase/auth";
 import { db } from "@/lib/firebase";
-import { doc, onSnapshot } from "firebase/firestore";
+import { DocumentReference, doc, getDoc, onSnapshot } from "firebase/firestore";
 
 const StyledPressable = styled(Pressable);
 const StyledText = styled(Text);
@@ -26,17 +26,24 @@ const CrewMember = () => {
   const [futureTrips, setFutureTrips] = useState<string[]>([]);
   const captainId = getAuth().currentUser?.uid;
 
+  const getInitData = async (ref: DocumentReference) => {
+    const userDoc = await getDoc(ref);
+    setTrips(userDoc.data()?.trips.map((trip: any) => trip.id));
+  };
+
   useEffect(() => {
     const userRef = doc(db, "users", captainId!);
+    getInitData(userRef);
+
     const unsubscribe = onSnapshot(
       userRef,
       { includeMetadataChanges: true },
       (userDoc) => {
-        setTrips(userDoc.data()?.trips);
+        setTrips(userDoc.data()?.trips.map((trip: any) => trip.id));
         console.log("trips: ", userDoc.data()?.trips);
       }
     );
-    return unsubscribe;
+    return unsubscribe();
   }, []);
 
   return (
