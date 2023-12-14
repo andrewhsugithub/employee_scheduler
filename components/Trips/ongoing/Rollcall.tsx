@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { SafeAreaView, View, Text, Pressable, Modal } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import QRCodeGenerator from "@/components/QRCodeGenerator";
 import { TextInput } from "react-native-paper";
 
 interface RollCallProps {
@@ -28,23 +27,26 @@ const RollCall = ({ show, handleShow }: RollCallProps) => {
       <View
         className={`absolute bg-transparent z-10 right-0 left-0 top-0 bottom-0 flex-1 items-center justify-center`}
       >
-        <View className={`p-5 rounded-2xl bg-gray-400`}>
+        <View className={`p-5 rounded-2xl bg-slate-200 w-2/5 h-1/5`}>
           {/* <Stack.Screen /> */}
-          <Text>Roll Call</Text>
+
           <Text>QR Code:</Text>
-          <QRCodeGenerator id={Math.random() * 10000 + ""} />
-          <Text>Verification Code</Text>
-          <TextInput
-            label="Verification Code"
-            placeholder="Enter your password for this trip"
-            onChangeText={(text) => setCode(text)}
-          />
-          <Pressable
-            className="bg-green-500 p-4"
-            onPress={(code) => handleVerify}
-          >
-            <Text>點名</Text>
-          </Pressable>
+
+          <View className="py-4 space-x-4 flex flex-row mr-2">
+            <TextInput
+              label="Enter Verification Code"
+              onChangeText={(text) => setCode(text)}
+              mode="outlined"
+              className="w-4/5"
+            />
+            <Pressable
+              className="bg-green-500 p-4 rounded-lg w-1/5"
+              onPress={(code) => handleVerify}
+            >
+              <Text>確認</Text>
+            </Pressable>
+          </View>
+
           {/* <View className="flex items-center justify-center">
             <Text className="text-blue-300">
               simulate people signing in if more than 10 people then means all

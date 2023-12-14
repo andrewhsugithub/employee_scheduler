@@ -28,9 +28,10 @@ const PickDate = ({ onChange, value, label }: PickDateProps) => {
       {/* </Text> */}
       <TextInput
         label={label}
+        placeholder="Select Date"
         value={value.toLocaleString()}
         mode="outlined"
-        className="flex-1"
+        className=""
         onPressIn={() => setShow(() => !show)}
         left={<TextInput.Icon icon="calendar" />}
         editable={false}

@@ -1,6 +1,7 @@
 ﻿import { Chip } from "react-native-paper";
 import { Text, View } from "react-native";
 import { useState } from "react";
+import { set } from "zod";
 
 interface CrewChipProps {
   user: {
@@ -26,7 +27,10 @@ const CrewChip = ({
       : false
   );
   const handleSelect = () => {
-    if (isCaptain) return;
+    if (isCaptain) {
+      if (selected === false) setSelected(true);
+      return;
+    }
     if (selected) {
       remove(fields.findIndex((item: any) => item.crew_id === user.id));
     } else
@@ -48,6 +52,8 @@ const CrewChip = ({
             ? isCaptain
               ? "bg-yellow-400"
               : "bg-purple-400"
+            : isCaptain
+            ? "bg-yellow-400"
             : "bg-slate-400"
         }`}
       >

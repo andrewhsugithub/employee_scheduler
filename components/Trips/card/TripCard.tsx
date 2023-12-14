@@ -11,11 +11,16 @@ import { Entypo } from "@expo/vector-icons";
 import { Pressable, View, Text } from "react-native";
 import TripInfo from "@/components/TripInfo";
 import InfoButton from "./InfoButton";
-import { DocumentData, doc, onSnapshot } from "firebase/firestore";
+import { DocumentData, doc, getDoc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 interface TripCardProps {
   tripId: string;
+}
+
+interface User {
+  name: string;
+  id: string;
 }
 
 const formatDate = (dateString: string) => {
@@ -59,6 +64,8 @@ const getProgress = (startDate: Date, endDate: Date) => {
 
 const TripCard = ({ tripId }: TripCardProps) => {
   const [trip, setTrip] = useState<DocumentData>();
+  const [captain, setCaptain] = useState<User>({} as User);
+  const [crew, setCrew] = useState<User[]>([]);
   const [formattedStartingDate, setFormattedStartingDate] = useState<string>();
   const [formattedEndingDate, setFormattedEndingDate] = useState<string>();
   const [expanded, setExpanded] = useState(false);
@@ -72,6 +79,16 @@ const TripCard = ({ tripId }: TripCardProps) => {
       { includeMetadataChanges: true },
       (tripDoc) => {
         setTrip(tripDoc.data());
+        setCaptain({
+          name: tripDoc.data()?.captain_name,
+          id: tripDoc.data()?.captain_id,
+        });
+        setCrew(
+          tripDoc.data()?.crew?.map((crewMember: any) => {
+            return { name: crewMember.crew_name, id: crewMember.id };
+          })
+        );
+
         const startingDate = tripDoc.data()?.startDate.toDate();
         const endingDate = tripDoc.data()?.endDate.toDate();
         setFormattedStartingDate(formatDate(startingDate!.toISOString()));
@@ -84,7 +101,7 @@ const TripCard = ({ tripId }: TripCardProps) => {
   }, []);
 
   return (
-    <View className="p-3">
+    <View className="p-3 m-8">
       <Card className="bg-blue-200">
         <View className="">
           <Card.Cover
@@ -94,13 +111,14 @@ const TripCard = ({ tripId }: TripCardProps) => {
         </View>
         <Card.Title
           title={`Trip Name: ${trip?.trip_name}`}
-          subtitle={`Captain: ${trip?.captain_name}`}
+          subtitle={`Captain: ${captain?.name}`}
           right={() => (
             <InfoButton
               expanded={expanded}
               handleExpand={(expanded: boolean) => setExpanded(!expanded)}
               captainName={trip?.captain_name}
               tripName={trip?.trip_name}
+              trips={trip!}
             />
           )}
         />

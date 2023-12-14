@@ -34,6 +34,7 @@ import AddCrewPage from "./AddCrewPage";
 import AddJobPage from "./AddJobPage";
 import JobForm from "../JobForm";
 import {} from "firebase/firestore";
+import RegisterTripInfo from "./RegisterTripInfo";
 
 interface RegisterTripProps {
   show: boolean;
@@ -63,12 +64,13 @@ const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
 
   useEffect(() => {
     const usersRef = collection(db, "users");
-    getInitData(usersRef);
+    // getInitData(usersRef);
 
     const unsubscribe = onSnapshot(
       usersRef,
       { includeMetadataChanges: true },
       (usersSnapshot) => {
+        console.log("change");
         const userList: User[] = [];
         usersSnapshot.forEach((user) => {
           userList.push({ id: user.id, name: user.data().name });
@@ -77,7 +79,7 @@ const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
       }
     );
 
-    return unsubscribe();
+    return () => unsubscribe();
   }, []);
 
   const registerTrip = async (data: RegisterFormSchema) => {
@@ -86,11 +88,19 @@ const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
     const trip = {
       trip_name: data.trip_name,
       captain_id: data.captain_id,
+      captain_name:
+        users[users.findIndex((user) => user.id === captainId!)].name,
       captain_job: data.captain_job,
       location: data.location,
       startDate: data.startDate,
       endDate: data.endDate,
-      crew: data.crew,
+      crew: data.crew.map((crew: any) => {
+        return {
+          crew_name:
+            users[users.findIndex((user) => user.id === crew.crew_id)].name,
+          ...crew,
+        };
+      }),
       created_at: new Date().toUTCString(),
       updated_at: new Date().toUTCString(),
     };
@@ -145,218 +155,78 @@ const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
       {/* <View 
         className={`absolute bg-transparent z-10 right-0 left-0 top-0 bottom-0 flex-1 items-center justify-center`}
       > */}
-      <View className={`p-16 items-center justify-center flex-1 bg-white`}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <Text className=" text-center font-bold text-3xl py-5">
-            Register Form
-          </Text>
-
-          <Controller
-            control={control}
-            name="trip_name"
-            render={({
-              field: { onChange, onBlur, value },
-              fieldState: { error },
-            }) => {
-              return (
-                <View className="flex flex-row py-2">
-                  <TextInput
-                    label="Trip Name"
-                    onBlur={onBlur}
-                    value={value}
-                    onChangeText={onChange}
-                    mode="outlined"
-                    className="flex-1"
-                  />
-                </View>
-              );
+      <View
+        className={`p-16 flex flex-1 items-center justify-between bg-white`}
+      >
+        <Text className="text-center font-bold text-3xl py-5">
+          Register Form
+        </Text>
+        <View className="w-full flex flex-row items-center justify-center">
+          <AntDesign
+            name="caretleft"
+            size={24}
+            color="black"
+            onPress={() => {
+              setPageIndex(() => {
+                return pageIndex === 0 ? pageIndex : pageIndex - 1;
+              });
             }}
           />
-          {errors?.trip_name?.message && (
-            <Text>{errors?.trip_name?.message}</Text>
-          )}
-
-          <View className="flex flex-row items-center py-4">
-            <Controller
-              control={control}
-              name="captain_id"
-              render={({
-                field: { onChange, onBlur, value },
-                fieldState: { error },
-              }) => {
-                return (
-                  <View className="flex flex-row py-2">
-                    <TextInput
-                      label="Captain Name"
-                      onBlur={onBlur}
-                      value={value}
-                      editable={false}
-                      mode="outlined"
-                      className="flex-1"
-                    />
-                  </View>
-                );
-              }}
-            />
-            {errors?.captain_id?.message && (
-              <Text>{errors?.captain_id?.message}</Text>
-            )}
+          <View className={`flex-1 ${pageIndex === 0 ? "p-2 " : "hidden"}`}>
+            <RegisterTripInfo control={control} errors={errors} />
           </View>
-
-          <Controller
-            control={control}
-            name="location"
-            render={({
-              field: { onChange, onBlur, value },
-              fieldState: { error },
-            }) => {
-              return (
-                <View className="flex flex-row">
-                  <TextInput
-                    label="Location"
-                    onBlur={onBlur}
-                    value={value}
-                    onChangeText={onChange}
-                    mode="outlined"
-                    className=" flex-1 rounded-full"
-                  />
-                </View>
-              );
+          {/* ADD CREW FORM PAGE 2 */}
+          <View className={`flex-1 ${pageIndex === 1 ? "p-2 " : "hidden"}`}>
+            <AddCrewPage
+              control={control}
+              errors={errors}
+              fields={fields}
+              prepend={prepend}
+              remove={remove}
+              users={users}
+            />
+          </View>
+          {/* ADD JOB FORM PAGE 3 */}
+          <View className={`flex-1 ${pageIndex === 2 ? "p-2 " : "hidden"}`}>
+            <AddJobPage
+              control={control}
+              errors={errors}
+              crewArray={fields}
+              users={users}
+            />
+          </View>
+          <AntDesign
+            name="caretright"
+            size={24}
+            color="black"
+            onPress={() => {
+              setPageIndex(() => {
+                return pageIndex === 2 ? pageIndex : pageIndex + 1;
+              });
             }}
           />
-          {errors?.location?.message && (
-            <Text>{errors?.location?.message}</Text>
-          )}
-
-          <View className="flex flex-row mx-4 my-8">
-            <Controller
-              control={control}
-              name="startDate"
-              render={({
-                field: { onChange, onBlur, value },
-                fieldState: { error },
-              }) => {
-                return (
-                  <View className="flex flex-row p-2 justify-left flex-1 rounded-full">
-                    <PickDate
-                      onChange={onChange}
-                      value={value ?? new Date()}
-                      label="Start Date"
-                    />
-                  </View>
-                );
-              }}
-            />
-            {errors?.startDate?.message && (
-              <Text>{errors?.startDate?.message}</Text>
-            )}
-            <Controller
-              control={control}
-              name="endDate"
-              render={({
-                field: { onChange, onBlur, value },
-                fieldState: { error },
-              }) => {
-                return (
-                  <View className="flex flex-row p-2 justify-center">
-                    <PickDate
-                      onChange={onChange}
-                      value={value ?? new Date()}
-                      label="End Date"
-                    />
-                  </View>
-                );
-              }}
-            />
-          </View>
-          {errors?.endDate?.message && <Text>{errors?.endDate?.message}</Text>}
-          <View className="h-4"></View>
-          <View className="flex flex-row items-center">
-            <AntDesign
-              name="caretleft"
-              size={24}
-              color="black"
-              onPress={() => {
-                setPageIndex(() => {
-                  return pageIndex === 0 ? pageIndex : pageIndex - 1;
-                });
-              }}
-            />
-
-            {/* ADD CREW FORM PAGE 1 */}
-            <View className={`flex-1 ${pageIndex === 0 ? "p-2 " : "hidden"}`}>
-              <AddCrewPage
-                control={control}
-                errors={errors}
-                fields={fields}
-                prepend={prepend}
-                remove={remove}
-                users={users}
-              />
-            </View>
-            {/* ADD JOB FORM PAGE 2 */}
-            <View className={`flex-1 ${pageIndex === 1 ? "p-2 " : "hidden"}`}>
-              <AddJobPage
-                control={control}
-                errors={errors}
-                crewArray={fields}
-                users={users}
-              />
-            </View>
-            <AntDesign
-              name="caretright"
-              size={24}
-              color="black"
-              onPress={() => {
-                setPageIndex(() => {
-                  return pageIndex === 1 ? pageIndex : pageIndex + 1;
-                });
-              }}
-            />
-          </View>
-          {errors?.location?.message && (
-            <Text>{errors?.location?.message}</Text>
-          )}
-
-          <Pressable
-            className="bg-blue-400 rounded-full p-3"
-            onPress={handleSubmit(registerTrip, (data) =>
-              console.log("error:", data)
-            )}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator size="large" className="text-gray-400" />
-            ) : (
-              <Text className="text-center text-xl">Register</Text>
-            )}
-          </Pressable>
-          <Text>
-            See email for QR Code and verification code if register succeeds
-            Note: you and your crew will also receive push notifications (see
-            /employee_id/verify to verify) and email and sms? if register
-            succeeds
-          </Text>
-        </ScrollView>
+        </View>
         <Pressable
-          onPress={() => {
-            handleShow(false);
-          }}
-          className="absolute top-7 right-7"
+          className="bg-blue-400 rounded-full p-3"
+          onPress={handleSubmit(registerTrip, (data) =>
+            console.log("error:", data)
+          )}
         >
-          <MaterialIcons name="close" color="black" size={22} />
+          {isSubmitting ? (
+            <ActivityIndicator size="large" className="text-gray-400" />
+          ) : (
+            <Text className="text-center text-xl">Register</Text>
+          )}
         </Pressable>
-        {/* <View className="p-2 items-center flex-row justify-center gap-x-2">
-          {fields.map((item, idx) => (
-            <Pressable
-              key={idx}
-              className={`w-2 h-2 rounded-full
-                ${crewIndex === idx ? "bg-black" : "bg-gray-400"}`}
-              onPress={() => setCrewIndex(idx)}
-            ></Pressable>
-          ))}
-        </View> */}
       </View>
-      {/* </View> */}
+      <Pressable
+        onPress={() => {
+          handleShow(false);
+        }}
+        className="absolute top-7 right-7"
+      >
+        <MaterialIcons name="close" color="black" size={22} />
+      </Pressable>
     </Modal>
   );
 };

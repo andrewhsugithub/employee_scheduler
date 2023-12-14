@@ -1,6 +1,5 @@
 ﻿import { useState } from "react";
 import { Text, SafeAreaView, View, Pressable } from "react-native";
-import QRCodeGenerator from "./QRCodeGenerator";
 import { styled } from "nativewind";
 import Info from "./trips/Info";
 
@@ -18,11 +17,11 @@ const TripInfo = () => {
       >
         <Text>Trip Info: </Text>
       </Pressable>
-      <Info
+      {/* <Info
         name={Math.random() * 100000 + ""}
         show={toggleModal}
         handleShow={(showModal: boolean) => setToggleModal(showModal)}
-      />
+      /> */}
       <Text className="text-red-600">
         If you are captain: Press Start Button this will be the qr code and
         verification code of the trip you receive in your email 1. make the ipad
@@ -38,7 +37,7 @@ const TripInfo = () => {
           {!generate ? "Start Trip/Generate QR Code" : "Close QR Code"}
         </Text>
       </StyledPressable>
-      {generate && <QRCodeGenerator id={Math.random() * 10000 + ""} />}
+      {/* {generate && <QRCodeGenerator id={Math.random() * 10000 + ""} />} */}
       <Text className="text-red-600">
         No matter if you are crew or captain you all need to scan or type the
         code on the ipad

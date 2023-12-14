@@ -26,24 +26,21 @@ const CrewMember = () => {
   const [futureTrips, setFutureTrips] = useState<string[]>([]);
   const captainId = getAuth().currentUser?.uid;
 
-  const getInitData = async (ref: DocumentReference) => {
-    const userDoc = await getDoc(ref);
-    setTrips(userDoc.data()?.trips.map((trip: any) => trip.id));
-  };
-
   useEffect(() => {
     const userRef = doc(db, "users", captainId!);
-    getInitData(userRef);
+    // getInitData(userRef);
 
     const unsubscribe = onSnapshot(
       userRef,
       { includeMetadataChanges: true },
       (userDoc) => {
-        setTrips(userDoc.data()?.trips.map((trip: any) => trip.id));
+        console.log("new");
+        // if (userDoc.data()?.trips?.length === 0) return;
+        setTrips(userDoc.data()?.trips?.map((trip: any) => trip.id));
         console.log("trips: ", userDoc.data()?.trips);
       }
     );
-    return unsubscribe();
+    return () => unsubscribe();
   }, []);
 
   return (

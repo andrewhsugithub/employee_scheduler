@@ -33,15 +33,18 @@ interface AddJobPageProps {
 const AddJobPage = ({ control, errors, crewArray, users }: AddJobPageProps) => {
   const captain = getAuth().currentUser?.displayName;
   const captainId = getAuth().currentUser?.uid;
-  const crewNames = users.reduce((acc: User[], user: User) => {
-    if (crewArray.findIndex((item: any) => item.crew_id === user.id) >= 0) {
-      acc.push({
-        name: user.name,
-        id: user.id,
-      });
-    }
-    return acc;
-  }, []);
+  const crewNames = [
+    { name: captain!, id: captainId! } as User,
+    ...users.reduce((acc: User[], user: User) => {
+      if (crewArray.findIndex((item: any) => item.crew_id === user.id) >= 0) {
+        acc.push({
+          name: user.name!,
+          id: user.id!,
+        });
+      }
+      return acc;
+    }, []),
+  ];
   // console.log("crewNames: ", crewNames);
 
   const [selectedCrewName, setSelectedCrewName] = useState(captain);
@@ -52,7 +55,8 @@ const AddJobPage = ({ control, errors, crewArray, users }: AddJobPageProps) => {
   const handlePress = () => setExpanded(!expanded);
 
   return (
-    <View className="bg-slate-100 rounded-3xl p-3 m-8 h-640">
+    // <View className="bg-slate-100 rounded-3xl p-3 m-8 h-640">
+    <View className="flex p-3">
       {/* <ScrollView className="h-500"> */}
       <List.Section title="Crew Names" className="z-50">
         <List.Accordion
@@ -111,6 +115,7 @@ const AddJobPage = ({ control, errors, crewArray, users }: AddJobPageProps) => {
       {/* {<Carousel control={control} errors={errors} />} */}
       {/* </ScrollView> */}
       {/* </ScrollView> */}
+      {/* </View> */}
     </View>
   );
 };

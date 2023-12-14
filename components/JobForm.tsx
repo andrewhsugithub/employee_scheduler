@@ -36,7 +36,7 @@ const JobForm = ({ crewId, control, errors, crewIndex }: JobFormProps) => {
 
   return (
     <View>
-      <ScrollView className="h-fit">
+      <ScrollView className="h-32">
         {fields.map((item, index) => (
           <View className="p-3 border-b-2 " key={item.id}>
             <Controller
@@ -117,6 +117,7 @@ const JobForm = ({ crewId, control, errors, crewIndex }: JobFormProps) => {
             </Pressable>
           </View>
         ))}
+        {/* <Text>Hi</Text> */}
       </ScrollView>
       <View className="py-1">
         {/* <View className="p-2 border-b my-4"></View> */}
@@ -134,12 +135,6 @@ const JobForm = ({ crewId, control, errors, crewIndex }: JobFormProps) => {
           <Text className="text-center">Add Job</Text>
         </Pressable>
       </View>
-      {/* <Pressable
-          onPress={() => setToggle(false)}
-          className="absolute top-2 right-2"
-        >
-          <MaterialIcons name="close" color="black" size={22} />
-        </Pressable> */}
     </View>
   );
 };
