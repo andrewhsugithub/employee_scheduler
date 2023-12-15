@@ -1,93 +1,69 @@
 ﻿import { Pressable, View, Text } from "react-native";
 import { Entypo } from "@expo/vector-icons";
-import { Button, List } from "react-native-paper";
-import { useState } from "react";
-import TripInfo from "@/components/TripInfo";
-import RegisterTrip from "../RegisterTrip";
-import Table from "../TableComponents";
-import Info from "../Info";
-import Rollcall from "../ongoing/Rollcall";
-import { DocumentData } from "firebase/firestore";
+import { Button } from "react-native-paper";
 
 interface InfoButtonProps {
   expanded: boolean;
   handleExpand: (expanded: boolean) => void;
-  captainName: string;
-  tripName: string;
-  trips: DocumentData;
+  handleShowTripInfo: (showModal: boolean) => void;
+  handleShowRollCall: (showModal: boolean) => void;
+  handleShowDetails: (showModal: boolean) => void;
+  handleShowEdit: (showModal: boolean) => void;
 }
 
 const InfoButton = ({
   expanded,
-  captainName,
   handleExpand,
-  tripName,
-  trips,
+  handleShowTripInfo,
+  handleShowRollCall,
+  handleShowDetails,
+  handleShowEdit,
 }: InfoButtonProps) => {
-  const [showTripInfo, setShowTripInfo] = useState(false);
-  const [showRollCall, setShowRollCall] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
-  const [showEdit, setShowEdit] = useState(false);
-
   return (
     <>
-      {expanded && (
-        <View className="py-2">
-          <List.Section>
-            <List.Accordion
-              title={"test"}
-              left={(props) => <List.Icon {...props} icon="account" />}
-            >
-              <List.Item
-                title={"Trip Info"}
-                onPress={() => setShowTripInfo(true)}
-                className={"w-full p-2 bg-white"}
-              />
-              <List.Item
-                title={"Roll Call"}
-                onPress={() => setShowRollCall(true)}
-                className={"w-full p-2 bg-white"}
-              />
-              <List.Item
-                title={"Details"}
-                onPress={() => setShowDetails(true)}
-                className={"w-full p-2 bg-white"}
-              />
-              <List.Item
-                title={"Edit"}
-                onPress={() => setShowEdit(true)}
-                className={"w-full p-2 bg-white"}
-              />
-            </List.Accordion>
-          </List.Section>
-          <Info
-            name={tripName}
-            show={showTripInfo}
-            trips={trips}
-            handleShow={(showModal: boolean) => setShowTripInfo(showModal)}
-          />
-          {/* <TripInfo /> */}
-
-          <Rollcall
-            show={showRollCall}
-            handleShow={(showModal: boolean) => setShowRollCall(showModal)}
-          />
-
-          <Table
-            show={showDetails}
-            handleShow={(showModal: boolean) => setShowDetails(showModal)}
-          />
-
-          <RegisterTrip
-            show={showEdit}
-            handleShow={setShowEdit}
-            captainName={captainName}
-          />
-        </View>
-      )}
-      <Button onPress={() => handleExpand(expanded)}>
+      <Button onPress={() => handleExpand(!expanded)}>
         <Entypo name="info-with-circle" size={20} color="black" />
       </Button>
+      {expanded && (
+        <View className="p-2 rounded-xl bg-black opacity-70 absolute -left-24 right-12 flex flex-col justify-between ">
+          <Pressable
+            onPress={() => handleShowTripInfo(true)}
+            className={"border-b-2 border-b-white"}
+          >
+            <View className="flex flex-row justify-between items-center m-2 mr-4">
+              <Text className="text-white w-full">Trip Info</Text>
+              <Entypo name="info-with-circle" size={15} color="white" />
+            </View>
+          </Pressable>
+          <Pressable
+            onPress={() => handleShowRollCall(true)}
+            className={"border-b-2 border-b-white"}
+          >
+            <View className="flex flex-row justify-between items-center m-2 mr-4">
+              <Text className="text-white w-full">Roll Call</Text>
+              <Entypo name="info-with-circle" size={15} color="white" />
+            </View>
+          </Pressable>
+          <Pressable
+            onPress={() => handleShowDetails(true)}
+            className={"border-b-2 border-b-white"}
+          >
+            <View className="flex flex-row justify-between items-center m-2 mr-4">
+              <Text className="text-white w-full">Details</Text>
+              <Entypo name="info-with-circle" size={15} color="white" />
+            </View>
+          </Pressable>
+          <Pressable
+            onPress={() => handleShowEdit(true)}
+            className={"border-b-2 border-b-white"}
+          >
+            <View className="flex flex-row justify-between items-center m-2 mr-4">
+              <Text className="text-white w-full">Edit</Text>
+              <Entypo name="info-with-circle" size={15} color="white" />
+            </View>
+          </Pressable>
+        </View>
+      )}
     </>
   );
 };

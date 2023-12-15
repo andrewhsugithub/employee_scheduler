@@ -1,6 +1,6 @@
 import { FlatList, Text, View, Modal, Pressable } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import React from "react";
+import React, { useEffect } from "react";
 
 interface TableProps {
   show: boolean;
@@ -22,6 +22,7 @@ const Table = ({ show, handleShow }: TableProps) => {
     { name: "Mei", job: "dance", time: "0600-1000" },
     { name: "Steve", job: "cook", time: "0000-1800" },
   ];
+
   const renderItem = ({ item }: { item: TableItem }) => (
     <View style={{ flexDirection: "row" }}>
       <View className={"w-1/5 bg-white border-black border-solid border"}>

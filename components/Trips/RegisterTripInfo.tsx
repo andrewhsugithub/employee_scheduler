@@ -2,6 +2,7 @@
 import { View, Text } from "react-native";
 import { TextInput } from "react-native-paper";
 import PickDate from "../PickDate";
+import { getAuth } from "firebase/auth";
 
 interface TripInfoProps {
   control: any;
@@ -9,6 +10,8 @@ interface TripInfoProps {
 }
 
 const RegisterTripInfo = ({ control, errors }: TripInfoProps) => {
+  const auth = getAuth().currentUser;
+
   return (
     <View className="flex p-3">
       <Controller
@@ -34,30 +37,15 @@ const RegisterTripInfo = ({ control, errors }: TripInfoProps) => {
       />
       {errors?.trip_name?.message && <Text>{errors?.trip_name?.message}</Text>}
       <View className="flex flex-row items-center py-4">
-        <Controller
-          control={control}
-          name="captain_id"
-          render={({
-            field: { onChange, onBlur, value },
-            fieldState: { error },
-          }) => {
-            return (
-              <View className="flex flex-row py-2">
-                <TextInput
-                  label="Captain Name"
-                  onBlur={onBlur}
-                  value={value}
-                  editable={false}
-                  mode="outlined"
-                  className="flex-1"
-                />
-              </View>
-            );
-          }}
-        />
-        {errors?.captain_id?.message && (
-          <Text>{errors?.captain_id?.message}</Text>
-        )}
+        <View className="flex flex-row py-2">
+          <TextInput
+            label="Captain Name"
+            value={auth?.displayName!}
+            editable={false}
+            mode="outlined"
+            className="flex-1"
+          />
+        </View>
       </View>
       <Controller
         control={control}

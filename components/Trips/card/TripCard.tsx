@@ -13,6 +13,10 @@ import TripInfo from "@/components/TripInfo";
 import InfoButton from "./InfoButton";
 import { DocumentData, doc, getDoc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import Info from "../Info";
+import Rollcall from "../ongoing/Rollcall";
+import Table from "../TableComponents";
+import RegisterTrip from "../RegisterTrip";
 
 interface TripCardProps {
   tripId: string;
@@ -72,6 +76,11 @@ const TripCard = ({ tripId }: TripCardProps) => {
   const [tripInterval, setTripInterval] = useState<string>();
   const [progress, setProgress] = useState<number>(0);
 
+  const [showTripInfo, setShowTripInfo] = useState(false);
+  const [showRollCall, setShowRollCall] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+
   useEffect(() => {
     const tripRef = doc(db, "trips", tripId!);
     const unsubscribe = onSnapshot(
@@ -97,48 +106,99 @@ const TripCard = ({ tripId }: TripCardProps) => {
         setProgress(getProgress(startingDate!, endingDate!));
       }
     );
-    return unsubscribe;
+    return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    setExpanded(false);
+  }, [showTripInfo, showRollCall, showDetails, showEdit]);
+
   return (
-    <View className="p-3 m-8">
-      <Card className="bg-blue-200">
-        <View className="">
-          <Card.Cover
-            className="object-fit"
-            source={{ uri: "https://picsum.photos/700" }}
-          />
-        </View>
-        <Card.Title
-          title={`Trip Name: ${trip?.trip_name}`}
-          subtitle={`Captain: ${captain?.name}`}
-          right={() => (
-            <InfoButton
-              expanded={expanded}
-              handleExpand={(expanded: boolean) => setExpanded(!expanded)}
-              captainName={trip?.captain_name}
-              tripName={trip?.trip_name}
-              trips={trip!}
+    <>
+      <Pressable
+        className="p-3 m-8"
+        onLongPress={() => setExpanded(!expanded)}
+        onPress={() => setExpanded(false)}
+      >
+        <Card className="bg-blue-200">
+          <View className="">
+            <Card.Cover
+              className="object-fit"
+              source={{ uri: "https://picsum.photos/700" }}
             />
-          )}
+          </View>
+          <Card.Title
+            title={`Trip Name: ${trip?.trip_name}`}
+            subtitle={`Captain: ${captain?.name}`}
+            className="z-50"
+            right={() => (
+              <InfoButton
+                expanded={expanded}
+                handleExpand={(expanded: boolean) => setExpanded(expanded)}
+                handleShowTripInfo={(showModal: boolean) =>
+                  setShowTripInfo(showModal)
+                }
+                handleShowRollCall={(showModal: boolean) =>
+                  setShowRollCall(showModal)
+                }
+                handleShowDetails={(showModal: boolean) =>
+                  setShowDetails(showModal)
+                }
+                handleShowEdit={(showModal: boolean) => setShowEdit(showModal)}
+              />
+            )}
+          />
+          <Card.Content>
+            <Paragraph className="text-slate-500">
+              Start: {formattedStartingDate}
+            </Paragraph>
+            <Paragraph className="text-slate-500">
+              End: {formattedEndingDate}
+            </Paragraph>
+            <Paragraph className="text-slate-500">
+              Interval: {tripInterval}
+            </Paragraph>
+            <Paragraph className="text-slate-500">
+              Location: {trip?.location}
+            </Paragraph>
+            <View className="pt-1">
+              <ProgressBar
+                progress={progress}
+                color={"blue"}
+                className="rounded-full"
+              />
+            </View>
+          </Card.Content>
+        </Card>
+      </Pressable>
+      {showTripInfo && (
+        <Info
+          name={trip?.trip_name}
+          show={showTripInfo}
+          trips={trip!}
+          handleShow={(showModal: boolean) => setShowTripInfo(showModal)}
         />
-        <Card.Content>
-          <Paragraph className="text-slate-500">
-            Start: {formattedStartingDate}
-          </Paragraph>
-          <Paragraph className="text-slate-500">
-            End: {formattedEndingDate}
-          </Paragraph>
-          <Paragraph className="text-slate-500">
-            Interval: {tripInterval}
-          </Paragraph>
-          <Paragraph className="text-slate-500">
-            Location: {trip?.location}
-          </Paragraph>
-          <ProgressBar progress={progress} color={"blue"} />
-        </Card.Content>
-      </Card>
-    </View>
+      )}
+      {showRollCall && (
+        <Rollcall
+          show={showRollCall}
+          handleShow={(showModal: boolean) => setShowRollCall(showModal)}
+        />
+      )}
+      {showDetails && (
+        <Table
+          show={showDetails}
+          handleShow={(showModal: boolean) => setShowDetails(showModal)}
+        />
+      )}
+      {showEdit && (
+        <RegisterTrip
+          show={showEdit}
+          handleShow={setShowEdit}
+          captainName={trip?.captain_name}
+        />
+      )}
+    </>
   );
 };
 

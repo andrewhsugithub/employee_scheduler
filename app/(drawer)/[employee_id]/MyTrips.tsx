@@ -6,6 +6,8 @@ import {
   Pressable,
   FlatList,
   ScrollView,
+  useColorScheme,
+  ActivityIndicator,
 } from "react-native";
 import { styled } from "nativewind";
 import AddTripButton from "@/components/trips/AddTripButton";
@@ -19,8 +21,9 @@ const StyledPressable = styled(Pressable);
 const StyledText = styled(Text);
 
 const CrewMember = () => {
+  const colorScheme = useColorScheme();
   const params = useLocalSearchParams();
-  const router = useRouter();
+  const [loading, setLoading] = useState(true);
   const [trips, setTrips] = useState<string[]>([]);
   const [ongoingTrips, setOngoingTrips] = useState<string[]>([]);
   const [futureTrips, setFutureTrips] = useState<string[]>([]);
@@ -37,6 +40,7 @@ const CrewMember = () => {
         console.log("new");
         // if (userDoc.data()?.trips?.length === 0) return;
         setTrips(userDoc.data()?.trips?.map((trip: any) => trip.id));
+        setLoading(false);
         console.log("trips: ", userDoc.data()?.trips);
       }
     );
@@ -47,20 +51,32 @@ const CrewMember = () => {
     <SafeAreaView className="h-full">
       <ScrollView>
         <View className="p-3">
-          <Text className="font-extrabold text-2xl py-4">Ongoing: </Text>
-          <View className="flex-row flex-wrap">
-            {trips?.map((tripId) => (
-              <TripCard tripId={tripId} key={tripId} />
-            ))}
-          </View>
+          <Text className={`font-extrabold text-2xl py-4 dark:text-white`}>
+            Ongoing:{" "}
+          </Text>
+          {loading ? (
+            <ActivityIndicator />
+          ) : (
+            <View className="flex-row flex-wrap">
+              {trips?.map((tripId) => (
+                <TripCard tripId={tripId} key={tripId} />
+              ))}
+            </View>
+          )}
         </View>
         <View className="p-3">
-          <Text className="font-extrabold text-2xl py-4">Future: </Text>
-          <View className="flex-row flex-wrap">
-            {trips?.map((tripId) => (
-              <TripCard tripId={tripId} key={tripId} />
-            ))}
-          </View>
+          <Text className="font-extrabold text-2xl py-4 dark:text-white">
+            Future:{" "}
+          </Text>
+          {loading ? (
+            <ActivityIndicator />
+          ) : (
+            <View className="flex-row flex-wrap">
+              {trips?.map((tripId) => (
+                <TripCard tripId={tripId} key={tripId} />
+              ))}
+            </View>
+          )}
         </View>
       </ScrollView>
       <AddTripButton captainName={params.employee_id as string} />

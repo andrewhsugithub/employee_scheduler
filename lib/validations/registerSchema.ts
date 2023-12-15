@@ -9,7 +9,6 @@ export const JobSchema = z.object({
 
 export const RegisterSchema = z.object({
   trip_name: z.string().min(1),
-  captain_id: z.string(),
   captain_job: z.array(JobSchema),
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),

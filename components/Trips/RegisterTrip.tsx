@@ -87,7 +87,7 @@ const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
 
     const trip = {
       trip_name: data.trip_name,
-      captain_id: data.captain_id,
+      captain_id: captainId,
       captain_name:
         users[users.findIndex((user) => user.id === captainId!)].name,
       captain_job: data.captain_job,
@@ -139,9 +139,6 @@ const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormSchema>({
     resolver: zodResolver(RegisterSchema),
-    defaultValues: {
-      captain_id: captainName,
-    },
   });
 
   const { fields, prepend, remove } = useFieldArray({

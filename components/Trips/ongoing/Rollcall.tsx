@@ -1,5 +1,5 @@
 ﻿import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SafeAreaView, View, Text, Pressable, Modal } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { TextInput } from "react-native-paper";
