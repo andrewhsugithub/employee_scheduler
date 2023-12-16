@@ -2,11 +2,20 @@
 import { useEffect, useState } from "react";
 import { useRouter, useNavigation } from "expo-router";
 import { DrawerActions, DrawerStatus } from "@react-navigation/native";
-import { Text, Pressable, StyleProp, ViewStyle } from "react-native";
+import {
+  Text,
+  Pressable,
+  StyleProp,
+  ViewStyle,
+  View,
+  useColorScheme,
+} from "react-native";
 import * as ScreenOrientation from "expo-screen-orientation";
 import { Feather } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import DrawerContent from "@/components/drawer/DrawerContent";
 import { getAuth, signOut } from "firebase/auth";
+import { Badge } from "react-native-paper";
 
 export default function DrawerLayout() {
   const auth = getAuth();
@@ -18,6 +27,7 @@ export default function DrawerLayout() {
   const [drawerType, setDrawerType] = useState<
     "front" | "slide" | "back" | "permanent" | undefined
   >();
+  const colorScheme = useColorScheme();
   console.log("drawerType:", drawerType, "drawerStatus:", drawerStatus);
 
   const getOrientation = async () => {
@@ -84,6 +94,8 @@ export default function DrawerLayout() {
     router.push("/(auth)/SignIn");
   };
 
+  const handleNotificationInbox = () => {};
+
   return (
     <Drawer
       screenOptions={{
@@ -92,13 +104,31 @@ export default function DrawerLayout() {
         drawerType: drawerType,
         headerLeft: () => (
           <Pressable onPress={onPressHandler} className="m-2">
-            <Feather name="sidebar" size={28} color="black" />
+            <Feather
+              name="sidebar"
+              size={28}
+              color={`${colorScheme === "dark" ? "white" : "black"}`}
+            />
           </Pressable>
         ),
         headerRight: () => (
-          <Pressable className="m-2" onPress={handleLogout}>
-            <Feather name="log-out" size={28} color="black" />
-          </Pressable>
+          <View className="flex flex-row">
+            <Pressable className="m-2" onPress={handleNotificationInbox}>
+              <Ionicons
+                name="notifications"
+                size={24}
+                color={`${colorScheme === "dark" ? "white" : "black"}`}
+              />
+              <Badge size={10} className="absolute z-40" />
+            </Pressable>
+            <Pressable className="m-2" onPress={handleLogout}>
+              <Feather
+                name="log-out"
+                size={28}
+                color={`${colorScheme === "dark" ? "white" : "black"}`}
+              />
+            </Pressable>
+          </View>
         ),
       }}
       defaultStatus="open"
@@ -116,6 +146,13 @@ export default function DrawerLayout() {
         options={{
           drawerLabel: "Accept",
           title: "Accept Trips Page",
+        }}
+      />
+      <Drawer.Screen
+        name="[employee_id]/History"
+        options={{
+          drawerLabel: "History",
+          title: "History Page",
         }}
       />
       <Drawer.Screen

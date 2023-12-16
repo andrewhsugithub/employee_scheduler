@@ -44,7 +44,13 @@ const CrewChip = ({
   return (
     <View className="p-1">
       <Chip
-        icon="account"
+        avatar={
+          <View className=" bg-purple-500 rounded-full flex items-center justify-center">
+            <Text className="text-center text-white">
+              {user.name.slice(0, 1).toUpperCase()}
+            </Text>
+          </View>
+        }
         onPress={handleSelect}
         mode="flat"
         className={`${

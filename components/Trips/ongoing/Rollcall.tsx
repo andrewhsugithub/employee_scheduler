@@ -32,7 +32,7 @@ const RollCall = ({ show, handleShow }: RollCallProps) => {
 
           <Text>QR Code:</Text>
 
-          <View className="py-4 space-x-4 flex flex-row mr-2">
+          <View className="py-4 space-x-4 flex flex-row mr-2 h-26">
             <TextInput
               label="Enter Verification Code"
               onChangeText={(text) => setCode(text)}
@@ -40,10 +40,10 @@ const RollCall = ({ show, handleShow }: RollCallProps) => {
               className="w-4/5"
             />
             <Pressable
-              className="bg-green-500 p-4 rounded-lg w-1/5"
+              className="bg-green-500 p-4 rounded-full w-1/5"
               onPress={(code) => handleVerify}
             >
-              <Text>確認</Text>
+              <Text className="text-xl text-center">確認</Text>
             </Pressable>
           </View>
 

@@ -8,6 +8,7 @@
   ActivityIndicator,
   Dimensions,
   ScrollView,
+  useColorScheme,
 } from "react-native";
 import { List } from "react-native-paper";
 import { Controller, set, useFieldArray, useForm } from "react-hook-form";
@@ -32,6 +33,7 @@ interface AddJobPageProps {
 
 const AddJobPage = ({ control, errors, crewArray, users }: AddJobPageProps) => {
   const captain = getAuth().currentUser?.displayName;
+  const colorScheme = useColorScheme();
   const captainId = getAuth().currentUser?.uid;
   const crewNames = [
     { name: captain!, id: captainId! } as User,
@@ -58,7 +60,11 @@ const AddJobPage = ({ control, errors, crewArray, users }: AddJobPageProps) => {
     // <View className="bg-slate-100 rounded-3xl p-3 m-8 h-640">
     <View className="flex p-3">
       {/* <ScrollView className="h-500"> */}
-      <List.Section title="Crew Names" className="z-50">
+      <List.Section
+        title="Crew Names"
+        className="z-50"
+        titleStyle={{ color: `${colorScheme === "dark" ? "white" : ""}` }}
+      >
         <List.Accordion
           title={`${selectedCrewName}`}
           left={(props) => <List.Icon {...props} icon="account" />}

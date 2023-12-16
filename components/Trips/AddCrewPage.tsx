@@ -33,17 +33,6 @@ const AddCrewPage = ({
 }: AddCrewPageProps) => {
   const auth = getAuth();
 
-  // useEffect(() => {
-  //   if (
-  //     fields.findIndex((item: any) => item.crew_id === auth.currentUser?.uid) <
-  //     0
-  //   )
-  //     prepend({
-  //       crew_id: auth.currentUser?.uid,
-  //       crew_job: [],
-  //     });
-  // }, []);
-
   const [searchQuery, setSearchQuery] = useState("");
   const onChangeSearch = (query: string) => setSearchQuery(query);
   const filteredCrewNames = users.filter((user) =>
@@ -51,10 +40,12 @@ const AddCrewPage = ({
   );
 
   return (
-    <View className="flex p-3">
-      <Text className="text-center font-bold text-xl">Tap to add crew</Text>
+    <View className="flex flex-col itesm-center justify-between">
+      <Text className="text-center font-bold text-xl dark:text-white p-3">
+        Tap to add crew
+      </Text>
       {/* TODO SEARCH BAR*/}
-      <View className="bg-white p-5 rounded-3xl">
+      <View className="p-5 rounded-3xl h-64">
         <Searchbar
           placeholder="Search"
           onChangeText={onChangeSearch}

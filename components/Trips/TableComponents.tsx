@@ -1,6 +1,8 @@
 import { FlatList, Text, View, Modal, Pressable } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import React, { useEffect } from "react";
+//import Timeline from 'react-calendar-timeline'
+import "react-calendar-timeline/lib/Timeline.css";
 
 interface TableProps {
   show: boolean;
@@ -14,6 +16,37 @@ interface TableItem {
   time: string;
 }
 
+const groups = [
+  { id: 1, title: "Employee 1" },
+  { id: 2, title: "Employee 2" },
+  // 員工們
+];
+
+const items = [
+  {
+    id: 1,
+    group: 1,
+    title: "Task A",
+    start_time: new Date(2023, 1, 1, 9, 0),
+    end_time: new Date(2023, 1, 1, 11, 0),
+  },
+  {
+    id: 2,
+    group: 1,
+    title: "Task B",
+    start_time: new Date(2023, 1, 1, 13, 0),
+    end_time: new Date(2023, 1, 1, 15, 0),
+  },
+  {
+    id: 3,
+    group: 2,
+    title: "Task C",
+    start_time: new Date(2023, 1, 1, 10, 30),
+    end_time: new Date(2023, 1, 1, 12, 30),
+  },
+  // 不同工作
+];
+
 const Table = ({ show, handleShow }: TableProps) => {
   const data: TableItem[] = [
     { name: "Name", job: "Job", time: "Time" },
@@ -24,7 +57,7 @@ const Table = ({ show, handleShow }: TableProps) => {
   ];
 
   const renderItem = ({ item }: { item: TableItem }) => (
-    <View style={{ flexDirection: "row" }}>
+    <View style={{ flexDirection: "row" }} className="py-2">
       <View className={"w-1/5 bg-white border-black border-solid border"}>
         <Text style={{ fontSize: 16, fontWeight: "bold", textAlign: "center" }}>
           {item.name}
@@ -51,7 +84,7 @@ const Table = ({ show, handleShow }: TableProps) => {
           className={`p-3 rounded-2xl bg-slate-200 w-4/5 h-4/5 justify-center`}
         >
           <View className="justify-center items-center">
-            <Text>Job Scheduler</Text>
+            <Text className="text-xl">Job Scheduler</Text>
           </View>
           <View
             style={{

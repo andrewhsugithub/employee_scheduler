@@ -34,13 +34,13 @@ const AcceptTrips = () => {
               >
                 <Text className="text-xl">Info</Text>
               </Pressable>
-              <Info
+              {/* <Info
                 name={Math.random() * 100000 + ""}
                 show={toggleModal}
                 handleShow={(showModal: boolean) => setToggleModal(showModal)}
-              />
+              /> */}
             </View>
-            <View className="flex flex-row justify-end">
+            <View className="flex flex-row justify-end space-x-4">
               <Pressable className="rounded-3xl bg-green-500 p-2">
                 <Text className="text-xl">Join</Text>
               </Pressable>

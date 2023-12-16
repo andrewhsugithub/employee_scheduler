@@ -24,7 +24,7 @@ const DrawerProfile = () => {
           className={`bg-sky-300 rounded-2xl flex ${!expand ? "" : "p-2"} `}
         >
           <Pressable className={`p-2 ${!expand ? "hidden" : ""}`}>
-            <Text className="text-2xl">Bla Bla Bla</Text>
+            <Text className="text-2xl">profile</Text>
           </Pressable>
           <Pressable
             className={`p-2 ${!expand ? "hidden" : ""}`}

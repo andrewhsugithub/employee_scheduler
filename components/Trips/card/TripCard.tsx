@@ -1,31 +1,13 @@
 ﻿import { useEffect, useState } from "react";
-import {
-  Avatar,
-  Button,
-  Card,
-  Title,
-  Paragraph,
-  ProgressBar,
-} from "react-native-paper";
-import { Entypo } from "@expo/vector-icons";
-import { Pressable, View, Text } from "react-native";
-import TripInfo from "@/components/TripInfo";
+import { Card, Paragraph, ProgressBar } from "react-native-paper";
+import { Pressable, View } from "react-native";
 import InfoButton from "./InfoButton";
-import { DocumentData, doc, getDoc, onSnapshot } from "firebase/firestore";
+import { DocumentData, doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Info from "../Info";
 import Rollcall from "../ongoing/Rollcall";
 import Table from "../TableComponents";
 import RegisterTrip from "../RegisterTrip";
-
-interface TripCardProps {
-  tripId: string;
-}
-
-interface User {
-  name: string;
-  id: string;
-}
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -66,7 +48,17 @@ const getProgress = (startDate: Date, endDate: Date) => {
   return progress;
 };
 
-const TripCard = ({ tripId }: TripCardProps) => {
+interface TripCardProps {
+  tripId: string;
+  isOngoing: boolean;
+}
+
+interface User {
+  name: string;
+  id: string;
+}
+
+const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
   const [trip, setTrip] = useState<DocumentData>();
   const [captain, setCaptain] = useState<User>({} as User);
   const [crew, setCrew] = useState<User[]>([]);
@@ -145,6 +137,7 @@ const TripCard = ({ tripId }: TripCardProps) => {
                   setShowDetails(showModal)
                 }
                 handleShowEdit={(showModal: boolean) => setShowEdit(showModal)}
+                isOngoing={isOngoing}
               />
             )}
           />
@@ -179,25 +172,23 @@ const TripCard = ({ tripId }: TripCardProps) => {
           handleShow={(showModal: boolean) => setShowTripInfo(showModal)}
         />
       )}
-      {showRollCall && (
-        <Rollcall
-          show={showRollCall}
-          handleShow={(showModal: boolean) => setShowRollCall(showModal)}
-        />
+      {isOngoing && (
+        <>
+          {showRollCall && (
+            <Rollcall
+              show={showRollCall}
+              handleShow={(showModal: boolean) => setShowRollCall(showModal)}
+            />
+          )}
+          {showDetails && (
+            <Table
+              show={showDetails}
+              handleShow={(showModal: boolean) => setShowDetails(showModal)}
+            />
+          )}
+        </>
       )}
-      {showDetails && (
-        <Table
-          show={showDetails}
-          handleShow={(showModal: boolean) => setShowDetails(showModal)}
-        />
-      )}
-      {showEdit && (
-        <RegisterTrip
-          show={showEdit}
-          handleShow={setShowEdit}
-          captainName={trip?.captain_name}
-        />
-      )}
+      {showEdit && <RegisterTrip show={showEdit} handleShow={setShowEdit} />}
     </>
   );
 };

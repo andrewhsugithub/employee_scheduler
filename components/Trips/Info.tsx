@@ -38,41 +38,14 @@ interface TripProps {
 
 const Info = ({ name, show, handleShow, trips }: TripProps) => {
   const auth = getAuth().currentUser;
-  const [crewInfo, setCrewInfo] = useState<CrewInfo>();
   const colorSheme = useColorScheme();
-
-  const getCrewInfo = () => {
-    if (trips.captain_id === auth?.uid) {
-      setCrewInfo({
-        name: trips.captain_name,
-        id: trips.captain_id,
-        jobs: trips.captain_job,
-      });
-      return;
-    } else {
-      trips.crew.findIndex((crewMember: any) => {
-        if (crewMember.crew_id === auth?.uid) {
-          setCrewInfo({
-            name: trips.captain_name,
-            id: trips.captain_id,
-            jobs: trips.captain_job,
-          });
-          return;
-        }
-      });
-    }
-  };
-
-  // useEffect(() => {
-  //   getCrewInfo();
-  // }, []);
 
   return (
     <Modal animationType="slide" visible={show} presentationStyle="pageSheet">
       {/* <View
         className={`absolute bg-transparent z-10 right-0 left-0 top-0 bottom-0 flex-1 items-center justify-center`}
       > */}
-      <View className={`p-10 bg-white dark:bg-black h-full`}>
+      <View className={`p-10 bg-white dark:bg-slate-800 h-full`}>
         <Text className="text-center font-bold text-2xl dark:text-white">
           Your Schedule
         </Text>

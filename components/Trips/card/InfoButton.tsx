@@ -9,6 +9,7 @@ interface InfoButtonProps {
   handleShowRollCall: (showModal: boolean) => void;
   handleShowDetails: (showModal: boolean) => void;
   handleShowEdit: (showModal: boolean) => void;
+  isOngoing: boolean;
 }
 
 const InfoButton = ({
@@ -18,6 +19,7 @@ const InfoButton = ({
   handleShowRollCall,
   handleShowDetails,
   handleShowEdit,
+  isOngoing,
 }: InfoButtonProps) => {
   return (
     <>
@@ -35,24 +37,28 @@ const InfoButton = ({
               <Entypo name="info-with-circle" size={15} color="white" />
             </View>
           </Pressable>
-          <Pressable
-            onPress={() => handleShowRollCall(true)}
-            className={"border-b-2 border-b-white"}
-          >
-            <View className="flex flex-row justify-between items-center m-2 mr-4">
-              <Text className="text-white w-full">Roll Call</Text>
-              <Entypo name="info-with-circle" size={15} color="white" />
-            </View>
-          </Pressable>
-          <Pressable
-            onPress={() => handleShowDetails(true)}
-            className={"border-b-2 border-b-white"}
-          >
-            <View className="flex flex-row justify-between items-center m-2 mr-4">
-              <Text className="text-white w-full">Details</Text>
-              <Entypo name="info-with-circle" size={15} color="white" />
-            </View>
-          </Pressable>
+          {isOngoing && (
+            <>
+              <Pressable
+                onPress={() => handleShowRollCall(true)}
+                className={"border-b-2 border-b-white"}
+              >
+                <View className="flex flex-row justify-between items-center m-2 mr-4">
+                  <Text className="text-white w-full">Roll Call</Text>
+                  <Entypo name="info-with-circle" size={15} color="white" />
+                </View>
+              </Pressable>
+              <Pressable
+                onPress={() => handleShowDetails(true)}
+                className={"border-b-2 border-b-white"}
+              >
+                <View className="flex flex-row justify-between items-center m-2 mr-4">
+                  <Text className="text-white w-full">Details</Text>
+                  <Entypo name="info-with-circle" size={15} color="white" />
+                </View>
+              </Pressable>
+            </>
+          )}
           <Pressable
             onPress={() => handleShowEdit(true)}
             className={"border-b-2 border-b-white"}

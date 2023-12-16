@@ -1,4 +1,4 @@
-﻿import React, { useCallback } from "react";
+﻿import React, { useCallback, useEffect, useState } from "react";
 import {
   StyleSheet,
   Alert,
@@ -13,11 +13,17 @@ interface ItemProps {
   item: any;
 }
 
+const MINUTE_MS = 1000 * 60 * 30;
+
 const AgendaItem = (props: ItemProps) => {
+  const [checkIn, setCheckIn] = useState(false);
+  const [checkOut, setCheckOut] = useState(false);
   const { item } = props;
+  //TODO: pass in job starting date and ending date
+  const endDate = new Date("2024-10-10T00:00:00");
 
   const buttonPressed = useCallback(() => {
-    Alert.alert("Show me more");
+    Alert.alert("Passcode: ");
   }, []);
 
   const itemPressed = useCallback(() => {
@@ -32,6 +38,17 @@ const AgendaItem = (props: ItemProps) => {
     );
   }
 
+  useEffect(() => {
+    if (new Date() <= endDate) return;
+
+    const interval = setInterval(() => {
+      console.log("Logs every 30 minutes");
+      // TODO: firebase notification
+    }, MINUTE_MS);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <Pressable onPress={itemPressed} style={styles.item}>
       <View>
@@ -40,7 +57,11 @@ const AgendaItem = (props: ItemProps) => {
       </View>
       <Text style={styles.itemTitleText}>{item.title}</Text>
       <View style={styles.itemButtonContainer}>
-        <Button color={"grey"} title={"More"} onPress={buttonPressed} />
+        <Button
+          color={"grey"}
+          title={`${checkOut ? "已完成" : checkIn ? "FINISH" : "簽到"}`}
+          onPress={buttonPressed}
+        />
       </View>
     </Pressable>
   );

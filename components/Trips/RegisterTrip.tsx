@@ -5,6 +5,8 @@
   ActivityIndicator,
   Modal,
   ScrollView,
+  useColorScheme,
+  KeyboardAvoidingView,
 } from "react-native";
 import {
   addDoc,
@@ -22,7 +24,7 @@ import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 
 import {
-  RegisterFormSchema,
+  type RegisterFormSchema,
   RegisterSchema,
 } from "@/lib/validations/registerSchema";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
@@ -38,7 +40,6 @@ import RegisterTripInfo from "./RegisterTripInfo";
 
 interface RegisterTripProps {
   show: boolean;
-  captainName: string;
   handleShow: (showModal: boolean) => void;
 }
 
@@ -47,24 +48,14 @@ interface User {
   id: string;
 }
 
-// TODO turn into realtime database and make sure referential integrity
-const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
+const RegisterTrip = ({ show, handleShow }: RegisterTripProps) => {
   const [pageIndex, setPageIndex] = useState(0);
   const captainId = getAuth().currentUser?.uid;
   const [users, setUsers] = useState<User[]>([]);
-
-  const getInitData = async (ref: CollectionReference) => {
-    const usersSnapshot = await getDocs(ref);
-    const userList: User[] = [];
-    usersSnapshot.forEach((user) => {
-      userList.push({ id: user.id, name: user.data().name });
-    });
-    setUsers(userList);
-  };
+  const colorScheme = useColorScheme();
 
   useEffect(() => {
     const usersRef = collection(db, "users");
-    // getInitData(usersRef);
 
     const unsubscribe = onSnapshot(
       usersRef,
@@ -83,8 +74,6 @@ const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
   }, []);
 
   const registerTrip = async (data: RegisterFormSchema) => {
-    // console.log("data: ", data);
-
     const trip = {
       trip_name: data.trip_name,
       captain_id: captainId,
@@ -114,6 +103,8 @@ const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
         trips: arrayUnion({
           id: addedTrip.id,
           password: Math.random().toString(36).slice(-8),
+          start_date: data.startDate,
+          end_date: data.endDate,
         }),
       });
       data.crew.map(async (crew: any) => {
@@ -122,13 +113,18 @@ const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
           trips: arrayUnion({
             id: addedTrip.id,
             password: Math.random().toString(36).slice(-8),
+            startDate: data.startDate,
+            end_date: data.endDate,
           }),
         });
       });
+      reset({ ...data });
       console.log("success", trip);
+      handleShow(false);
     } catch (err) {
       console.log("err: ", err);
     }
+    setPageIndex(0);
   };
 
   const {
@@ -145,85 +141,100 @@ const RegisterTrip = ({ show, captainName, handleShow }: RegisterTripProps) => {
     name: "crew",
     control,
   });
-  // console.log("fields: ", fields);
 
   return (
     <Modal animationType="slide" visible={show} presentationStyle="pageSheet">
-      {/* <View 
-        className={`absolute bg-transparent z-10 right-0 left-0 top-0 bottom-0 flex-1 items-center justify-center`}
-      > */}
-      <View
-        className={`p-16 flex flex-1 items-center justify-between bg-white`}
-      >
-        <Text className="text-center font-bold text-3xl py-5">
-          Register Form
-        </Text>
-        <View className="w-full flex flex-row items-center justify-center">
-          <AntDesign
-            name="caretleft"
-            size={24}
-            color="black"
-            onPress={() => {
-              setPageIndex(() => {
-                return pageIndex === 0 ? pageIndex : pageIndex - 1;
-              });
-            }}
-          />
-          <View className={`flex-1 ${pageIndex === 0 ? "p-2 " : "hidden"}`}>
-            <RegisterTripInfo control={control} errors={errors} />
-          </View>
-          {/* ADD CREW FORM PAGE 2 */}
-          <View className={`flex-1 ${pageIndex === 1 ? "p-2 " : "hidden"}`}>
-            <AddCrewPage
-              control={control}
-              errors={errors}
-              fields={fields}
-              prepend={prepend}
-              remove={remove}
-              users={users}
-            />
-          </View>
-          {/* ADD JOB FORM PAGE 3 */}
-          <View className={`flex-1 ${pageIndex === 2 ? "p-2 " : "hidden"}`}>
-            <AddJobPage
-              control={control}
-              errors={errors}
-              crewArray={fields}
-              users={users}
-            />
-          </View>
-          <AntDesign
-            name="caretright"
-            size={24}
-            color="black"
-            onPress={() => {
-              setPageIndex(() => {
-                return pageIndex === 2 ? pageIndex : pageIndex + 1;
-              });
-            }}
-          />
-        </View>
-        <Pressable
-          className="bg-blue-400 rounded-full p-3"
-          onPress={handleSubmit(registerTrip, (data) =>
-            console.log("error:", data)
-          )}
+      <KeyboardAvoidingView behavior={"padding"} className="flex-1">
+        <View
+          className={`p-16 flex flex-1 items-center justify-between bg-white dark:bg-slate-800`}
         >
-          {isSubmitting ? (
-            <ActivityIndicator size="large" className="text-gray-400" />
-          ) : (
-            <Text className="text-center text-xl">Register</Text>
-          )}
+          <Text className="text-center font-bold text-3xl py-5 dark:text-white">
+            Register Form
+          </Text>
+          <View className="w-full flex flex-row items-center justify-center">
+            <AntDesign
+              name="caretleft"
+              size={24}
+              color={`${colorScheme === "dark" ? "white" : "black"}`}
+              onPress={() => {
+                setPageIndex(() => {
+                  return pageIndex === 0 ? pageIndex : pageIndex - 1;
+                });
+              }}
+            />
+            <View className={`flex-1 ${pageIndex === 0 ? "p-2 " : "hidden"}`}>
+              <RegisterTripInfo control={control} errors={errors} />
+            </View>
+            {/* ADD CREW FORM PAGE 2 */}
+            <View className={`flex-1 ${pageIndex === 1 ? "p-2 " : "hidden"}`}>
+              <AddCrewPage
+                control={control}
+                errors={errors}
+                fields={fields}
+                prepend={prepend}
+                remove={remove}
+                users={users}
+              />
+            </View>
+            {/* ADD JOB FORM PAGE 3 */}
+            <View className={`flex-1 ${pageIndex === 2 ? "p-2 " : "hidden"}`}>
+              <AddJobPage
+                control={control}
+                errors={errors}
+                crewArray={fields}
+                users={users}
+              />
+            </View>
+            <AntDesign
+              name="caretright"
+              size={24}
+              color={`${colorScheme === "dark" ? "white" : "black"}`}
+              onPress={() => {
+                setPageIndex(() => {
+                  return pageIndex === 2 ? pageIndex : pageIndex + 1;
+                });
+              }}
+            />
+          </View>
+          <View>
+            <Pressable
+              className="bg-blue-300 rounded-full p-3"
+              onPress={handleSubmit(registerTrip, (data) =>
+                console.log("error:", data)
+              )}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator size="large" className="text-gray-400" />
+              ) : (
+                <Text className="text-center text-xl px-2">Register</Text>
+              )}
+            </Pressable>
+            <View className="p-4 items-center flex-row justify-center gap-x-4 dark:bg-slate-800">
+              {[0, 1, 2].map((item, idx) => (
+                <Pressable
+                  key={idx}
+                  className={`w-2 h-2 rounded-full
+                ${
+                  pageIndex === idx ? "bg-black dark:bg-white" : "bg-gray-400"
+                }`}
+                  onPress={() => setPageIndex(idx)}
+                ></Pressable>
+              ))}
+            </View>
+          </View>
+        </View>
+
+        <Pressable
+          onPress={() => handleShow(false)}
+          className="absolute top-7 right-7"
+        >
+          <MaterialIcons
+            name="close"
+            color={`${colorScheme === "dark" ? "white" : "black"}`}
+            size={22}
+          />
         </Pressable>
-      </View>
-      <Pressable
-        onPress={() => {
-          handleShow(false);
-        }}
-        className="absolute top-7 right-7"
-      >
-        <MaterialIcons name="close" color="black" size={22} />
-      </Pressable>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };

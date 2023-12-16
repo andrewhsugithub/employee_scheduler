@@ -4,11 +4,11 @@ import {
   Text,
   View,
   Pressable,
-  FlatList,
   ScrollView,
   useColorScheme,
   ActivityIndicator,
 } from "react-native";
+import { styled } from "nativewind";
 import AddTripButton from "@/components/trips/AddTripButton";
 import TripCard from "@/components/trips/card/TripCard";
 import { useEffect, useState } from "react";
@@ -18,29 +18,19 @@ import { doc } from "firebase/firestore";
 import RegisterTrip from "@/components/trips/RegisterTrip";
 import useFetch from "@/hooks/useFetch";
 
-const CrewMember = () => {
+const History = () => {
   const colorScheme = useColorScheme();
   const params = useLocalSearchParams();
-  const [ongoingTrips, setOngoingTrips] = useState<string[]>([]);
-  const [futureTrips, setFutureTrips] = useState<string[]>([]);
+  const [pastTrips, setPastTrips] = useState<string[]>([]);
   const [showModal, setShowModal] = useState(false);
   const captainId = getAuth().currentUser?.uid;
 
   const { loading, data } = useFetch(doc(db, "users", captainId!));
 
   useEffect(() => {
-    setOngoingTrips(
+    setPastTrips(
       data?.trips
-        ?.filter(
-          (trip: any) =>
-            trip.start_date.toDate() <= new Date() &&
-            trip.end_date.toDate() >= new Date()
-        )
-        .map((trip: any) => trip.id)
-    );
-    setFutureTrips(
-      data?.trips
-        ?.filter((trip: any) => trip.start_date.toDate() > new Date())
+        ?.filter((trip: any) => trip.end_date.toDate() < new Date())
         .map((trip: any) => trip.id)
     );
   }, [data]);
@@ -51,30 +41,14 @@ const CrewMember = () => {
         <View className="p-3">
           <View className="border-b-8 dark:border-white">
             <Text className="font-extrabold text-4xl py-4 dark:text-white ">
-              Ongoing:{" "}
+              History:{" "}
             </Text>
           </View>
           {loading ? (
             <ActivityIndicator />
           ) : (
             <View className="flex-row flex-wrap">
-              {ongoingTrips?.map((tripId) => (
-                <TripCard tripId={tripId} key={tripId} isOngoing={true} />
-              ))}
-            </View>
-          )}
-        </View>
-        <View className="p-3">
-          <View className="border-b-8 dark:border-white">
-            <Text className="font-extrabold text-4xl py-4 dark:text-white ">
-              Future:{" "}
-            </Text>
-          </View>
-          {loading ? (
-            <ActivityIndicator />
-          ) : (
-            <View className="flex-row flex-wrap">
-              {futureTrips?.map((tripId) => (
+              {pastTrips?.map((tripId) => (
                 <TripCard tripId={tripId} key={tripId} isOngoing={false} />
               ))}
               <Pressable className="m-8" onPress={() => setShowModal(true)}>
@@ -104,4 +78,4 @@ const CrewMember = () => {
   );
 };
 
-export default CrewMember;
+export default History;

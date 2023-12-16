@@ -35,10 +35,10 @@ const JobForm = ({ crewId, control, errors, crewIndex }: JobFormProps) => {
   });
 
   return (
-    <View>
-      <ScrollView className="h-32">
+    <View className="h-64">
+      <ScrollView className="h-46">
         {fields.map((item, index) => (
-          <View className="p-3 border-b-2 " key={item.id}>
+          <View className="p-3 border-b-2 dark:border-white" key={item.id}>
             <Controller
               control={control}
               name={`${jobRole}.${index}.jobName`}
@@ -74,8 +74,8 @@ const JobForm = ({ crewId, control, errors, crewIndex }: JobFormProps) => {
                   <Text>{errors?.captain_job?.[index]?.jobName?.message}</Text>
                 )}
 
-            <View className="flex p-3 gap-y-2">
-              <View className="flex flex-row">
+            <View className="flex flex-row py-3 space-x-6 justify-center">
+              <View className="w-52">
                 <Controller
                   control={control}
                   name={`${jobRole}.${index}.startDate`}
@@ -91,7 +91,7 @@ const JobForm = ({ crewId, control, errors, crewIndex }: JobFormProps) => {
                   )}
                 />
               </View>
-              <View className="flex flex-row ">
+              <View className="w-52">
                 <Controller
                   control={control}
                   name={`${jobRole}.${index}.endDate`}

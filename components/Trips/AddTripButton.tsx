@@ -23,7 +23,6 @@ const AddTripButton = ({ captainName }: AddTripButtonProps) => {
       </Pressable>
       <RegisterTrip
         show={showModal}
-        captainName={captainName}
         handleShow={(showModal: boolean) => setShowModal(showModal)}
       />
     </>
