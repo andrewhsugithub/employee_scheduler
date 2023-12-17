@@ -1,5 +1,4 @@
-﻿import { Link, useLocalSearchParams, useRouter } from "expo-router";
-import { SafeAreaView, Text, View, Pressable, ScrollView } from "react-native";
+﻿import { SafeAreaView, Text, View, Pressable, ScrollView } from "react-native";
 import { TextInput } from "react-native-paper";
 import {
   DocumentReference,
@@ -12,7 +11,6 @@ import { getAuth } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
 import { useCheckConnectionContext } from "@/context/checkConnectionContext";
-import { set } from "zod";
 
 // TODO: make editable
 const Profile = () => {
@@ -57,7 +55,8 @@ const Profile = () => {
               label="👤Name"
               value={name}
               editable={isEditable}
-              mode="outlined"
+              mode="flat"
+              className="flex-1 rounded-md"
               onChangeText={(text) => setName(text)}
             />
           </View>
@@ -66,7 +65,8 @@ const Profile = () => {
               label="📧Email"
               value={email}
               editable={isEditable}
-              mode="outlined"
+              mode="flat"
+              className="flex-1 rounded-md"
               onChangeText={(text) => setEmail(text)}
             />
           </View>
@@ -75,7 +75,8 @@ const Profile = () => {
               label="📞Phone Number"
               value={phoneNumber}
               editable={isEditable}
-              mode="outlined"
+              mode="flat"
+              className="flex-1 rounded-md"
               onChangeText={(text) => setPhoneNumber(text)}
             />
           </View>

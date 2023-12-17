@@ -25,7 +25,7 @@ const History = () => {
   const [showModal, setShowModal] = useState(false);
   const captainId = getAuth().currentUser?.uid;
 
-  const { loading, data } = useFetch(doc(db, "users", captainId!));
+  const { loading, data } = useFetch(doc(db, "users", captainId!), true);
 
   useEffect(() => {
     setPastTrips(

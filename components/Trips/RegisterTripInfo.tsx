@@ -32,7 +32,7 @@ const RegisterTripInfo = ({ control, errors }: TripInfoProps) => {
             value={auth?.displayName!}
             editable={false}
             mode="flat"
-            className="flex-1 rounded-full"
+            className="flex-1 rounded-md"
             underlineStyle={{
               display: "none",
             }}

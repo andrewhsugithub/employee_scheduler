@@ -6,13 +6,6 @@
   Modal,
   useColorScheme,
 } from "react-native";
-import { Stack, useLocalSearchParams } from "expo-router";
-import {
-  ExpandableCalendar,
-  AgendaList,
-  CalendarProvider,
-  WeekCalendar,
-} from "react-native-calendars";
 import { useEffect, useState } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { DocumentData } from "firebase/firestore";
@@ -23,22 +16,18 @@ import {
 } from "@/lib/validations/registerSchema";
 import Schedule from "./card/Info/Schedule";
 
-interface CrewInfo {
-  name: string;
-  id: string;
-  jobs: JobFormSchema[];
-}
-
 interface TripProps {
   name: string;
   show: boolean;
   handleShow: (showModal: boolean) => void;
   trips: DocumentData;
+  crew: User[];
 }
 
-const Info = ({ name, show, handleShow, trips }: TripProps) => {
+const Info = ({ name, show, handleShow, trips, crew }: TripProps) => {
   const auth = getAuth().currentUser;
   const colorSheme = useColorScheme();
+  const [selectedCrew, setSelectedCrew] = useState(auth?.uid);
 
   return (
     <Modal animationType="slide" visible={show} presentationStyle="pageSheet">
@@ -47,12 +36,38 @@ const Info = ({ name, show, handleShow, trips }: TripProps) => {
       > */}
       <View className={`p-10 bg-white dark:bg-slate-800 h-full`}>
         <Text className="text-center font-bold text-2xl dark:text-white">
-          Your Schedule
+          Schedule
         </Text>
-        <Text className="font-medium text-lg dark:text-white text-center p-3">
-          Name: {auth?.displayName}
-        </Text>
-        <Schedule trip={trips!} />
+        {auth?.uid === trips?.captain_id ? (
+          <>
+            {crew.map((user: User) => (
+              <View
+                key={user.id}
+                className={`${
+                  selectedCrew !== user.id ? "hidden" : ""
+                }  h-full p-4`}
+              >
+                <Text className="font-medium text-lg dark:text-white text-center p-3">
+                  Name: {user.name}
+                </Text>
+                <Schedule trip={trips!} crewId={user.id} />
+              </View>
+            ))}
+          </>
+        ) : (
+          <View className=" h-full p-4">
+            <Text className="font-medium text-lg dark:text-white text-center p-3">
+              Name: {auth?.displayName}
+            </Text>
+            <Schedule trip={trips!} crewId={auth?.uid!} />
+          </View>
+        )}
+        {/* <>
+          <Text className="font-medium text-lg dark:text-white text-center p-3">
+            Name: {auth?.displayName}
+          </Text>
+          <Schedule trip={trips!} crewId={auth?.uid!} />
+        </> */}
       </View>
       <Pressable
         onPress={() => handleShow(false)}

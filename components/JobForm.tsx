@@ -14,6 +14,8 @@ import PickDate from "./PickDate";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { collection, addDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import Input from "./Input";
+import DateInput from "./DateInput";
 
 interface JobFormProps {
   crewId: string;
@@ -39,7 +41,13 @@ const JobForm = ({ crewId, control, errors, crewIndex }: JobFormProps) => {
       <ScrollView className="h-46">
         {fields.map((item, index) => (
           <View className="p-3 border-b-2 dark:border-white" key={item.id}>
-            <Controller
+            <Input
+              control={control}
+              errors={errors}
+              name={`${jobRole}.${index}.jobName`}
+              label={"Job Name"}
+            />
+            {/* <Controller
               control={control}
               name={`${jobRole}.${index}.jobName`}
               render={({
@@ -72,11 +80,17 @@ const JobForm = ({ crewId, control, errors, crewIndex }: JobFormProps) => {
                 )
               : errors?.captain_job?.[index]?.jobName?.message && (
                   <Text>{errors?.captain_job?.[index]?.jobName?.message}</Text>
-                )}
+                )} */}
 
             <View className="flex flex-row py-3 space-x-6 justify-center">
               <View className="w-52">
-                <Controller
+                <DateInput
+                  control={control}
+                  errors={errors}
+                  name={`${jobRole}.${index}.startDate`}
+                  label="Start Date"
+                />
+                {/* <Controller
                   control={control}
                   name={`${jobRole}.${index}.startDate`}
                   render={({
@@ -89,10 +103,16 @@ const JobForm = ({ crewId, control, errors, crewIndex }: JobFormProps) => {
                       label="Start Date"
                     />
                   )}
-                />
+                /> */}
               </View>
               <View className="w-52">
-                <Controller
+                <DateInput
+                  control={control}
+                  errors={errors}
+                  name={`${jobRole}.${index}.endDate`}
+                  label="End Date"
+                />
+                {/*<Controller
                   control={control}
                   name={`${jobRole}.${index}.endDate`}
                   render={({
@@ -105,7 +125,7 @@ const JobForm = ({ crewId, control, errors, crewIndex }: JobFormProps) => {
                       label="End Date"
                     />
                   )}
-                />
+                  />*/}
               </View>
             </View>
 

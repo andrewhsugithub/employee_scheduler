@@ -8,6 +8,7 @@ import Info from "../Info";
 import Rollcall from "../ongoing/Rollcall";
 import Table from "../TableComponents";
 import RegisterTrip from "../RegisterTrip";
+import useFetch from "@/hooks/useFetch";
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -53,14 +54,7 @@ interface TripCardProps {
   isOngoing: boolean;
 }
 
-interface User {
-  name: string;
-  id: string;
-}
-
 const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
-  const [trip, setTrip] = useState<DocumentData>();
-  const [captain, setCaptain] = useState<User>({} as User);
   const [crew, setCrew] = useState<User[]>([]);
   const [formattedStartingDate, setFormattedStartingDate] = useState<string>();
   const [formattedEndingDate, setFormattedEndingDate] = useState<string>();
@@ -73,33 +67,31 @@ const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
   const [showDetails, setShowDetails] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
 
-  useEffect(() => {
-    const tripRef = doc(db, "trips", tripId!);
-    const unsubscribe = onSnapshot(
-      tripRef,
-      { includeMetadataChanges: true },
-      (tripDoc) => {
-        setTrip(tripDoc.data());
-        setCaptain({
-          name: tripDoc.data()?.captain_name,
-          id: tripDoc.data()?.captain_id,
-        });
-        setCrew(
-          tripDoc.data()?.crew?.map((crewMember: any) => {
-            return { name: crewMember.crew_name, id: crewMember.id };
-          })
-        );
+  const { loading: loadTrip, data: tripData } = useFetch(
+    doc(db, "trips", tripId!),
+    true
+  );
 
-        const startingDate = tripDoc.data()?.startDate.toDate();
-        const endingDate = tripDoc.data()?.endDate.toDate();
-        setFormattedStartingDate(formatDate(startingDate!.toISOString()));
-        setFormattedEndingDate(formatDate(endingDate!.toISOString()));
-        setTripInterval(subtractDates(endingDate!, startingDate!));
-        setProgress(getProgress(startingDate!, endingDate!));
-      }
-    );
-    return () => unsubscribe();
-  }, []);
+  useEffect(() => {
+    if (loadTrip) return;
+
+    setCrew([
+      {
+        name: tripData?.captain_name,
+        id: tripData?.captain_id,
+      },
+      ...tripData?.crew?.map((crewMember: any) => {
+        return { name: crewMember.crew_name, id: crewMember.crew_id };
+      }),
+    ]);
+
+    const startingDate = tripData?.startDate.toDate();
+    const endingDate = tripData?.endDate.toDate();
+    setFormattedStartingDate(formatDate(startingDate!.toISOString()));
+    setFormattedEndingDate(formatDate(endingDate!.toISOString()));
+    setTripInterval(subtractDates(endingDate!, startingDate!));
+    setProgress(getProgress(startingDate!, endingDate!));
+  }, [tripData, loadTrip]);
 
   useEffect(() => {
     setExpanded(false);
@@ -120,8 +112,8 @@ const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
             />
           </View>
           <Card.Title
-            title={`Trip Name: ${trip?.trip_name}`}
-            subtitle={`Captain: ${captain?.name}`}
+            title={`Trip Name: ${tripData?.trip_name}`}
+            subtitle={`Captain: ${tripData?.captain_name}`}
             className="z-50"
             right={() => (
               <InfoButton
@@ -152,7 +144,7 @@ const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
               Interval: {tripInterval}
             </Paragraph>
             <Paragraph className="text-slate-500">
-              Location: {trip?.location}
+              Location: {tripData?.location}
             </Paragraph>
             <View className="pt-1">
               <ProgressBar
@@ -166,10 +158,11 @@ const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
       </Pressable>
       {showTripInfo && (
         <Info
-          name={trip?.trip_name}
+          name={tripData?.trip_name}
           show={showTripInfo}
-          trips={trip!}
+          trips={tripData!}
           handleShow={(showModal: boolean) => setShowTripInfo(showModal)}
+          crew={crew}
         />
       )}
       {isOngoing && (

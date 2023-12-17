@@ -4,7 +4,6 @@
   Pressable,
   ActivityIndicator,
   Modal,
-  ScrollView,
   useColorScheme,
   KeyboardAvoidingView,
 } from "react-native";
@@ -14,10 +13,6 @@ import {
   collection,
   doc,
   updateDoc,
-  CollectionReference,
-  getDoc,
-  getDocs,
-  onSnapshot,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { AntDesign, MaterialIcons } from "@expo/vector-icons";
@@ -37,41 +32,31 @@ import AddJobPage from "./AddJobPage";
 import JobForm from "../JobForm";
 import {} from "firebase/firestore";
 import RegisterTripInfo from "./RegisterTripInfo";
+import useFetch from "@/hooks/useFetch";
 
 interface RegisterTripProps {
   show: boolean;
   handleShow: (showModal: boolean) => void;
 }
 
-interface User {
-  name: string;
-  id: string;
-}
-
 const RegisterTrip = ({ show, handleShow }: RegisterTripProps) => {
   const [pageIndex, setPageIndex] = useState(0);
   const captainId = getAuth().currentUser?.uid;
-  const [users, setUsers] = useState<User[]>([]);
   const colorScheme = useColorScheme();
 
+  const { loading: loadUsers, data: allUsers } = useFetch(
+    collection(db, "users"),
+    false
+  );
+
+  const [users, setUsers] = useState<User[]>([]);
   useEffect(() => {
-    const usersRef = collection(db, "users");
-
-    const unsubscribe = onSnapshot(
-      usersRef,
-      { includeMetadataChanges: true },
-      (usersSnapshot) => {
-        console.log("change");
-        const userList: User[] = [];
-        usersSnapshot.forEach((user) => {
-          userList.push({ id: user.id, name: user.data().name });
-        });
-        setUsers(userList);
-      }
-    );
-
-    return () => unsubscribe();
-  }, []);
+    const userList: User[] = [];
+    allUsers?.forEach((user: any) => {
+      userList.push({ id: user.id, name: user.data().name });
+    });
+    setUsers(userList);
+  }, [allUsers]);
 
   const registerTrip = async (data: RegisterFormSchema) => {
     const trip = {
@@ -168,8 +153,6 @@ const RegisterTrip = ({ show, handleShow }: RegisterTripProps) => {
             {/* ADD CREW FORM PAGE 2 */}
             <View className={`flex-1 ${pageIndex === 1 ? "p-2 " : "hidden"}`}>
               <AddCrewPage
-                control={control}
-                errors={errors}
                 fields={fields}
                 prepend={prepend}
                 remove={remove}

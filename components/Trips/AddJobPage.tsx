@@ -1,19 +1,6 @@
-﻿import {
-  SafeAreaView,
-  View,
-  Text,
-  Pressable,
-  TextInput,
-  FlatList,
-  ActivityIndicator,
-  Dimensions,
-  ScrollView,
-  useColorScheme,
-} from "react-native";
+﻿import { View, useColorScheme } from "react-native";
 import { List } from "react-native-paper";
-import { Controller, set, useFieldArray, useForm } from "react-hook-form";
 import JobForm from "@/components/JobForm";
-import Carousel from "@/components/Carousel";
 import { useState } from "react";
 import { getAuth } from "firebase/auth";
 

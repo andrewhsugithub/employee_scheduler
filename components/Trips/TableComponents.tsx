@@ -57,19 +57,31 @@ const Table = ({ show, handleShow }: TableProps) => {
   ];
 
   const renderItem = ({ item }: { item: TableItem }) => (
-    <View style={{ flexDirection: "row" }} className="py-2">
+    <View
+      //style={{ flexDirection: "row" }}
+      className="py-2 flex-row"
+    >
       <View className={"w-1/5 bg-white border-black border-solid border"}>
-        <Text style={{ fontSize: 16, fontWeight: "bold", textAlign: "center" }}>
+        <Text
+          //style={{ fontSize: 16, fontWeight: "bold", textAlign: "center" }}
+          className="text-sm font-bold text-center"
+        >
           {item.name}
         </Text>
       </View>
       <View className={"w-1/5 bg-white border-black border-solid border"}>
-        <Text style={{ fontSize: 16, fontWeight: "bold", textAlign: "center" }}>
+        <Text
+          //style={{ fontSize: 16, fontWeight: "bold", textAlign: "center" }}
+          className="text-sm font-bold text-center"
+        >
           {item.job}
         </Text>
       </View>
       <View className={"w-3/5 bg-white border-black border-solid border"}>
-        <Text style={{ fontSize: 16, fontWeight: "bold", textAlign: "center" }}>
+        <Text
+          //style={{ fontSize: 16, fontWeight: "bold", textAlign: "center" }}
+          className="text-sm font-bold text-center"
+        >
           {item.time}
         </Text>
       </View>
@@ -87,12 +99,13 @@ const Table = ({ show, handleShow }: TableProps) => {
             <Text className="text-xl">Job Scheduler</Text>
           </View>
           <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-              marginTop: "10%",
-            }}
+            //style={{
+            //  flex: 1,
+            //  justifyContent: "center",
+            //  alignItems: "center",
+            //  marginTop: "10%",
+            //}}
+            className="flex-1 items-center justify-center"
           >
             <FlatList
               data={data}

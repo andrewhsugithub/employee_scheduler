@@ -3,7 +3,7 @@
 export const JobSchema = z.object({
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
-  jobName: z.string().optional(),
+  jobName: z.string(),
   jobDescription: z.string().optional(),
 });
 

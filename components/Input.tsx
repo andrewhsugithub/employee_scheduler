@@ -1,4 +1,6 @@
-﻿import { Control, Controller, FieldErrors, FieldValues } from "react-hook-form";
+﻿//! TEXT INPUT
+
+import { Control, Controller, FieldErrors, FieldValues } from "react-hook-form";
 import { View } from "react-native";
 import { HelperText, TextInput } from "react-native-paper";
 
@@ -7,6 +9,7 @@ interface InputProps<T extends FieldValues> {
   errors: FieldErrors<T>;
   name: string;
   label: string;
+  classname?: string;
 }
 
 const Input = <T extends FieldValues>({
@@ -14,11 +17,12 @@ const Input = <T extends FieldValues>({
   errors,
   name,
   label,
+  classname,
 }: InputProps<T>) => {
   const errorMessage = errors?.[name]?.message;
 
   return (
-    <View className="h-14">
+    <View className={`h-14 ${classname}`}>
       <Controller
         control={control}
         name={name as any}
@@ -34,7 +38,7 @@ const Input = <T extends FieldValues>({
                 value={value}
                 onChangeText={onChange}
                 mode="flat"
-                className="flex-1 rounded-full"
+                className="flex-1 rounded-md"
                 underlineStyle={{
                   // borderRadius: 9999,
                   // width: "90%",

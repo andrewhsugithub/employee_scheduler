@@ -14,7 +14,7 @@ import TripCard from "@/components/trips/card/TripCard";
 import { useEffect, useState } from "react";
 import { getAuth } from "firebase/auth";
 import { db } from "@/lib/firebase";
-import { doc } from "firebase/firestore";
+import { collection, doc, onSnapshot } from "firebase/firestore";
 import RegisterTrip from "@/components/trips/RegisterTrip";
 import useFetch from "@/hooks/useFetch";
 
@@ -24,26 +24,30 @@ const CrewMember = () => {
   const [ongoingTrips, setOngoingTrips] = useState<string[]>([]);
   const [futureTrips, setFutureTrips] = useState<string[]>([]);
   const [showModal, setShowModal] = useState(false);
+
   const captainId = getAuth().currentUser?.uid;
 
-  const { loading, data } = useFetch(doc(db, "users", captainId!));
+  const { loading: loadTrips, data: allTrips } = useFetch(
+    doc(db, "users", captainId!),
+    true
+  );
 
   useEffect(() => {
     setOngoingTrips(
-      data?.trips
+      allTrips?.trips
         ?.filter(
           (trip: any) =>
-            trip.start_date.toDate() <= new Date() &&
-            trip.end_date.toDate() >= new Date()
+            trip?.start_date?.toDate() <= new Date() &&
+            trip?.end_date?.toDate() >= new Date()
         )
         .map((trip: any) => trip.id)
     );
     setFutureTrips(
-      data?.trips
-        ?.filter((trip: any) => trip.start_date.toDate() > new Date())
+      allTrips?.trips
+        ?.filter((trip: any) => trip?.start_date?.toDate() > new Date())
         .map((trip: any) => trip.id)
     );
-  }, [data]);
+  }, [allTrips]);
 
   return (
     <SafeAreaView className="h-full">
@@ -54,7 +58,7 @@ const CrewMember = () => {
               Ongoing:{" "}
             </Text>
           </View>
-          {loading ? (
+          {loadTrips ? (
             <ActivityIndicator />
           ) : (
             <View className="flex-row flex-wrap">
@@ -70,7 +74,7 @@ const CrewMember = () => {
               Future:{" "}
             </Text>
           </View>
-          {loading ? (
+          {loadTrips ? (
             <ActivityIndicator />
           ) : (
             <View className="flex-row flex-wrap">

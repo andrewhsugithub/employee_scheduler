@@ -16,6 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import DrawerContent from "@/components/drawer/DrawerContent";
 import { getAuth, signOut } from "firebase/auth";
 import { Badge } from "react-native-paper";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function DrawerLayout() {
   const auth = getAuth();
@@ -91,6 +92,9 @@ export default function DrawerLayout() {
 
   const handleLogout = async () => {
     await signOut(auth);
+    await AsyncStorage.removeItem("email");
+    await AsyncStorage.removeItem("password");
+    await AsyncStorage.removeItem("username");
     router.push("/(auth)/SignIn");
   };
 

@@ -6,6 +6,7 @@ import {
   Text,
   Pressable,
   ActivityIndicator,
+  KeyboardAvoidingView,
 } from "react-native";
 import { doc, setDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
@@ -22,6 +23,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Input from "@/components/Input";
 
 // const phoneUtil = PhoneNumberUtil.getInstance();
 
@@ -91,13 +93,19 @@ const Auth = () => {
   const [passwordVisible, setPasswordVisible] = useState(true);
   const [passwordVisibledouble, setPasswordVisibledouble] = useState(true);
   return (
-    <SafeAreaView className="h-screen flex items-center justify-center">
-      <View className="h-full flex-1 w-1/2">
-        <Text className="text-2xl text-black font-extrabold mt-32">
-          Sign Up Form
-        </Text>
-
-        <Controller
+    <SafeAreaView className="h-screen">
+      <View className="h-full p-40 flex flex-col justify-around ">
+        <KeyboardAvoidingView behavior={"padding"} className="flex-1">
+          <Text className="text-2xl text-black dark:text-white font-extrabold text-center">
+            Sign Up Form
+          </Text>
+          <Input
+            control={control}
+            errors={errors}
+            name="username"
+            label={"👤Name"}
+          />
+          {/* <Controller
           control={control}
           name="username"
           render={({
@@ -118,8 +126,14 @@ const Auth = () => {
             );
           }}
         />
-        {errors?.username?.message && <Text>{errors?.username?.message}</Text>}
-        <Controller
+        {errors?.username?.message && <Text>{errors?.username?.message}</Text>} */}
+          <Input
+            control={control}
+            errors={errors}
+            name="email"
+            label={"📧Email"}
+          />
+          {/* <Controller
           control={control}
           name="email"
           render={({
@@ -141,8 +155,14 @@ const Auth = () => {
             );
           }}
         />
-        {errors?.email?.message && <Text>{errors?.email?.message}</Text>}
-        <Controller
+        {errors?.email?.message && <Text>{errors?.email?.message}</Text>} */}
+          <Input
+            control={control}
+            errors={errors}
+            name="password"
+            label={"🔒Password"}
+          />
+          {/* <Controller
           control={control}
           name="password"
           render={({
@@ -170,8 +190,14 @@ const Auth = () => {
             );
           }}
         />
-        {errors?.password?.message && <Text>{errors?.password?.message}</Text>}
-        <Controller
+        {errors?.password?.message && <Text>{errors?.password?.message}</Text>} */}
+          <Input
+            control={control}
+            errors={errors}
+            name="confirmPassword"
+            label={"🔒Confirm Password"}
+          />
+          {/* <Controller
           control={control}
           name="confirmPassword"
           render={({
@@ -204,56 +230,66 @@ const Auth = () => {
         />
         {errors?.confirmPassword?.message && (
           <Text>{errors?.confirmPassword?.message}</Text>
-        )}
-        <PhoneInput
-          ref={phoneInput}
-          countryPickerButtonStyle={{ width: "20%" }}
-          containerStyle={{ width: "100%" }}
-          defaultValue={value}
-          defaultCode="TW"
-          layout="first"
-          onChangeText={(text) => setValue(text)}
-          onChangeFormattedText={(text) => {
-            setFormattedValue(text);
-            submitted && setValid(phoneInput.current?.isValidNumber(text)!);
-          }}
-          // withDarkTheme
-          withShadow
-        />
-        {!valid && <Text>Phone number is not valid</Text>}
-
-        <Pressable
-          className="bg-green-500 p-4 rounded-full items-center mt-6 mb-6"
-          onPress={handleSubmit(
-            (data) => {
-              const checkValid =
-                phoneInput.current?.isValidNumber(formattedValue);
-              setValid(checkValid!);
-              setSubmitted(true);
-              if (!checkValid) return;
-              SignUp(data);
-            },
-            (data) => {
-              const checkValid =
-                phoneInput.current?.isValidNumber(formattedValue);
-              setValid(checkValid!);
-              console.log("data error:", data);
-              setSubmitted(true);
-            }
-          )}
-        >
-          {isSubmitting ? (
-            <ActivityIndicator size="small" className="text-gray-400" />
-          ) : (
-            <Text>Sign Up</Text>
-          )}
-        </Pressable>
-        <Text className="text-right">
-          Have an account?{" "}
-          <Link href={`/(auth)/SignIn`} className="underline">
-            <Text>Sign In?</Text>
-          </Link>
-        </Text>
+        )} */}
+          <View>
+            <PhoneInput
+              ref={phoneInput}
+              countryPickerButtonStyle={{ width: "20%" }}
+              containerStyle={{ width: "100%" }}
+              defaultValue={value}
+              defaultCode="TW"
+              layout="first"
+              onChangeText={(text) => setValue(text)}
+              onChangeFormattedText={(text) => {
+                setFormattedValue(text);
+                submitted && setValid(phoneInput.current?.isValidNumber(text)!);
+              }}
+              // withDarkTheme
+              withShadow
+            />
+            {!valid && <Text>Phone number is not valid</Text>}
+          </View>
+          <View>
+            <Pressable
+              className="bg-green-500 p-4 rounded-full items-center mt-6 mb-6"
+              onPress={handleSubmit(
+                (data) => {
+                  const checkValid =
+                    phoneInput.current?.isValidNumber(formattedValue);
+                  setValid(checkValid!);
+                  setSubmitted(true);
+                  if (!checkValid) return;
+                  SignUp(data);
+                },
+                (data) => {
+                  const checkValid =
+                    phoneInput.current?.isValidNumber(formattedValue);
+                  setValid(checkValid!);
+                  console.log("data error:", data);
+                  setSubmitted(true);
+                }
+              )}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator
+                  size="small"
+                  className="text-gray-400 dark:text-white"
+                />
+              ) : (
+                <Text>Sign Up</Text>
+              )}
+            </Pressable>
+            <Text className="text-right dark:text-white">
+              Have an account?{" "}
+              <Link
+                href={`/(auth)/SignIn`}
+                className="underline dark:text-white"
+              >
+                <Text>Sign In?</Text>
+              </Link>
+            </Text>
+          </View>
+        </KeyboardAvoidingView>
       </View>
     </SafeAreaView>
   );

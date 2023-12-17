@@ -15,22 +15,13 @@ interface User {
 }
 
 interface AddCrewPageProps {
-  control: any;
-  errors: any;
   fields: any;
   prepend: any;
   remove: any;
   users: User[];
 }
 
-const AddCrewPage = ({
-  control,
-  errors,
-  fields,
-  prepend,
-  remove,
-  users,
-}: AddCrewPageProps) => {
+const AddCrewPage = ({ fields, prepend, remove, users }: AddCrewPageProps) => {
   const auth = getAuth();
 
   const [searchQuery, setSearchQuery] = useState("");

@@ -1,5 +1,5 @@
 ﻿import { useCallback, useEffect, useRef, useState } from "react";
-import { View } from "react-native";
+import { Pressable, View, Text } from "react-native";
 import { AgendaList, CalendarProvider, Calendar } from "react-native-calendars";
 import {
   JobSchema,
@@ -14,6 +14,7 @@ interface JobTime {
   hour?: string;
   duration?: string;
   title?: string;
+  endTime?: Date;
 }
 
 interface JobTimeInfo {
@@ -46,17 +47,29 @@ interface JobEvent
 
 interface ScheduleProps {
   trip: DocumentData;
+  crewId: string;
 }
 
-const Schedule = ({ trip }: ScheduleProps) => {
+const Schedule = ({ trip, crewId }: ScheduleProps) => {
   const auth = getAuth().currentUser;
   const [jobEvent, setJobEvent] = useState<JobTimeInfo[]>([]);
   const [tripDates, setTripDates] = useState<Record<string, MarkedDates>>({});
+  const [aboard, setAboard] = useState(false);
   const theme = useRef(getTheme());
 
   const renderItem = useCallback(({ item }: any) => {
     return <Item item={item} />;
   }, []);
+
+  const formattedDate = (date: Date) => {
+    return date
+      .toLocaleString("zh-TW", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      })
+      .replaceAll("/", "-");
+  };
 
   // get trip dates
   useEffect(() => {
@@ -76,29 +89,36 @@ const Schedule = ({ trip }: ScheduleProps) => {
 
       dates[dateString] = {
         startingDay:
-          date.toLocaleString() === trip?.startDate.toDate().toLocaleString()
+          formattedDate(date) === formattedDate(trip?.startDate.toDate())
             ? true
             : false,
         color: "red",
         endingDay:
-          date.toLocaleString() === trip?.endDate.toDate().toLocaleString()
+          formattedDate(date) === formattedDate(trip?.endDate.toDate())
             ? true
             : false,
         dotColor: "#50cebb",
         marked: true,
       };
     }
-    setTripDates(dates);
+
+    setTripDates(
+      Object.keys(dates)
+        .sort()
+        .reduce((newDates: any, key: any) => {
+          newDates[key] = dates[key];
+          return newDates;
+        }, {})
+    );
   }, []);
 
   // get job items
   useEffect(() => {
     const jobEvents: Record<string, JobTime[]> = {};
     const jobs =
-      auth?.uid === trip?.captain_id
+      crewId === trip?.captain_id
         ? trip?.captain_job
-        : trip?.crew[trip?.crew.findIndex((crew: any) => crew.id === auth?.uid)]
-            .jobName;
+        : trip?.crew[trip?.crew.findIndex((crew: any) => crew.id === crewId)];
 
     for (
       let date = new Date(trip?.startDate.toDate());
@@ -129,9 +149,10 @@ const Schedule = ({ trip }: ScheduleProps) => {
       return formattedHour + ampm;
     };
 
-    jobs.map((job: JobEvent) => {
+    //TODO: ADD necessary item props
+    jobs?.map((job: JobEvent) => {
       jobEvents[
-        job.startDate
+        job?.startDate
           .toDate()
           .toLocaleString("zh-TW", {
             year: "numeric",
@@ -140,9 +161,10 @@ const Schedule = ({ trip }: ScheduleProps) => {
           })
           .replaceAll("/", "-")
       ].push({
-        hour: getFormattedHour(job.startDate.toDate()),
-        duration: getDiff(job.startDate.toDate(), job.endDate.toDate()),
-        title: job.jobName!,
+        hour: getFormattedHour(job?.startDate.toDate()),
+        duration: getDiff(job?.startDate.toDate(), job?.endDate.toDate()),
+        title: job?.jobName,
+        endTime: job?.endDate.toDate(),
       });
     });
 
@@ -155,23 +177,29 @@ const Schedule = ({ trip }: ScheduleProps) => {
   }, []);
 
   return (
-    <View className=" h-full p-4">
-      <CalendarProvider
-        date={new Date()
-          .toLocaleString("zh-TW", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-          })
-          .replaceAll("/", "-")}
-        // onDateChanged={onDateChanged}
-        // onMonthChange={onMonthChange}
-        showTodayButton
-        // disabledOpacity={0.6}
-        // theme={todayBtnTheme.current}
-        // todayBottomMargin={16}
-        className="flex flex-row gap-x-12"
-      >
+    // <View className="">
+    <CalendarProvider
+      date={
+        trip?.startDate.toDate() > new Date()
+          ? formattedDate(trip?.startDate.toDate())
+          : trip?.endDate.toDate() > new Date()
+          ? formattedDate(trip?.startDate.toDate())
+          : formattedDate(new Date())
+      }
+      // onDateChanged={onDateChanged}
+      // onMonthChange={onMonthChange}
+      showTodayButton={
+        trip?.startDate.toDate() > new Date()
+          ? false
+          : trip?.endDate.toDate() > new Date()
+          ? true
+          : false
+      }
+      // disabledOpacity={0.6}
+      // theme={todayBtnTheme.current}
+      className="flex flex-row gap-x-12"
+    >
+      <View className="flex flex-col gap-y-4">
         <Calendar
           markingType={"period"}
           className="p-6 rounded-2xl"
@@ -180,16 +208,32 @@ const Schedule = ({ trip }: ScheduleProps) => {
           enableSwipeMonths
           // onDayPress={onDayPress}
         />
-        <AgendaList
-          sections={jobEvent as any}
-          renderItem={renderItem}
-          className="rounded-3xl bg-white mb-12"
-          // scrollToNextEvent
-          // sectionStyle={styles.section}
-          // dayFormat={'yyyy-MM-d'}
-        />
-      </CalendarProvider>
-    </View>
+        <View className="flex items-center">
+          {
+            <Pressable
+              className={`bg-teal-500 rounded-3xl p-3 ${
+                trip?.startDate.toDate() >= new Date() ||
+                trip?.endDate.toDate() <= new Date()
+                  ? "opacity-60"
+                  : ""
+              }`}
+              onPress={() => setAboard(!aboard)}
+            >
+              <Text className="text-2xl font-bold text-center dark:text-white">
+                {aboard ? "Offboard" : "Aboard"}
+              </Text>
+            </Pressable>
+          }
+        </View>
+      </View>
+      <AgendaList
+        sections={jobEvent as any}
+        renderItem={renderItem}
+        className="rounded-3xl bg-white mb-12"
+        scrollToNextEvent
+      />
+    </CalendarProvider>
+    // </View>
   );
 };
 

@@ -42,7 +42,7 @@ const PickDate = ({ onChange, value, label }: PickDateProps) => {
               hour: "2-digit",
             })}
             mode="flat"
-            className="rounded-full"
+            className="rounded-md"
             underlineStyle={{
               // borderRadius: 9999,
               // width: "90%",
