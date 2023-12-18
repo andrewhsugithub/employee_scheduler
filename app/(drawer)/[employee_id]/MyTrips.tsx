@@ -17,6 +17,7 @@ import { db } from "@/lib/firebase";
 import { collection, doc, onSnapshot } from "firebase/firestore";
 import RegisterTrip from "@/components/trips/RegisterTrip";
 import useFetch from "@/hooks/useFetch";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const CrewMember = () => {
   const colorScheme = useColorScheme();
@@ -33,6 +34,9 @@ const CrewMember = () => {
   );
 
   useEffect(() => {
+    allTrips?.trips?.forEach(async (trip: any) => {
+      await AsyncStorage.setItem(`${trip?.id}`, trip?.password);
+    });
     setOngoingTrips(
       allTrips?.trips
         ?.filter(
@@ -83,7 +87,7 @@ const CrewMember = () => {
               ))}
               <Pressable className="m-8" onPress={() => setShowModal(true)}>
                 <View className="bg-transparent rounded-2xl flex-1 p-4 w-full">
-                  <View className="border-dashed border-8 dark:border-white p-20 rounded-2xl h-full">
+                  <View className="border-dashed border-4 dark:border-white p-20 rounded-2xl h-full">
                     <View className="flex flex-col items-center justify-evenly h-full">
                       <Text className="font-black text-7xl dark:text-white">
                         +

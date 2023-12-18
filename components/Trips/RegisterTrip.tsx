@@ -66,8 +66,8 @@ const RegisterTrip = ({ show, handleShow }: RegisterTripProps) => {
         users[users.findIndex((user) => user.id === captainId!)].name,
       captain_job: data.captain_job,
       location: data.location,
-      startDate: data.startDate,
-      endDate: data.endDate,
+      start_date: data.startDate,
+      end_date: data.endDate,
       crew: data.crew.map((crew: any) => {
         return {
           crew_name:
@@ -98,7 +98,7 @@ const RegisterTrip = ({ show, handleShow }: RegisterTripProps) => {
           trips: arrayUnion({
             id: addedTrip.id,
             password: Math.random().toString(36).slice(-8),
-            startDate: data.startDate,
+            start_date: data.startDate,
             end_date: data.endDate,
           }),
         });

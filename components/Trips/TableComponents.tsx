@@ -1,8 +1,6 @@
 import { FlatList, Text, View, Modal, Pressable } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import React, { useEffect } from "react";
-//import Timeline from 'react-calendar-timeline'
-import "react-calendar-timeline/lib/Timeline.css";
 
 interface TableProps {
   show: boolean;
@@ -15,37 +13,6 @@ interface TableItem {
   job: string;
   time: string;
 }
-
-const groups = [
-  { id: 1, title: "Employee 1" },
-  { id: 2, title: "Employee 2" },
-  // 員工們
-];
-
-const items = [
-  {
-    id: 1,
-    group: 1,
-    title: "Task A",
-    start_time: new Date(2023, 1, 1, 9, 0),
-    end_time: new Date(2023, 1, 1, 11, 0),
-  },
-  {
-    id: 2,
-    group: 1,
-    title: "Task B",
-    start_time: new Date(2023, 1, 1, 13, 0),
-    end_time: new Date(2023, 1, 1, 15, 0),
-  },
-  {
-    id: 3,
-    group: 2,
-    title: "Task C",
-    start_time: new Date(2023, 1, 1, 10, 30),
-    end_time: new Date(2023, 1, 1, 12, 30),
-  },
-  // 不同工作
-];
 
 const Table = ({ show, handleShow }: TableProps) => {
   const data: TableItem[] = [
@@ -98,21 +65,15 @@ const Table = ({ show, handleShow }: TableProps) => {
           <View className="justify-center items-center">
             <Text className="text-xl">Job Scheduler</Text>
           </View>
-          <View
-            //style={{
-            //  flex: 1,
-            //  justifyContent: "center",
-            //  alignItems: "center",
-            //  marginTop: "10%",
-            //}}
-            className="flex-1 items-center justify-center"
-          >
+
+          <View className="flex-1 items-center justify-center">
             <FlatList
               data={data}
               renderItem={renderItem}
               keyExtractor={(item) => item.name.toString()}
             />
           </View>
+
           <Pressable
             onPress={() => handleShow(false)}
             className="absolute top-4 right-4"

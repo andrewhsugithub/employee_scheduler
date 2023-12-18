@@ -9,12 +9,14 @@ import { DocumentData, Timestamp } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import Item from "./calendar/Item";
 import { getTheme } from "./calendar/theme";
+import { TextInput } from "react-native-paper";
 
 interface JobTime {
-  hour?: string;
+  hour?: Date;
   duration?: string;
   title?: string;
   endTime?: Date;
+  startDate?: Date;
 }
 
 interface JobTimeInfo {
@@ -144,9 +146,10 @@ const Schedule = ({ trip, crewId }: ScheduleProps) => {
 
     const getFormattedHour = (date: Date) => {
       const hour = date.getHours();
+      const minutes = date.getMinutes();
       const ampm = hour >= 12 ? "PM" : "AM";
       const formattedHour = hour % 12 === 0 ? 12 : hour % 12;
-      return formattedHour + ampm;
+      return formattedHour + ":" + minutes + ampm;
     };
 
     //TODO: ADD necessary item props
@@ -161,10 +164,11 @@ const Schedule = ({ trip, crewId }: ScheduleProps) => {
           })
           .replaceAll("/", "-")
       ].push({
-        hour: getFormattedHour(job?.startDate.toDate()),
+        hour: job?.startDate.toDate(),
         duration: getDiff(job?.startDate.toDate(), job?.endDate.toDate()),
         title: job?.jobName,
         endTime: job?.endDate.toDate(),
+        startDate: trip?.startDate.toDate(),
       });
     });
 
@@ -195,6 +199,7 @@ const Schedule = ({ trip, crewId }: ScheduleProps) => {
           ? true
           : false
       }
+      todayBottomMargin={100}
       // disabledOpacity={0.6}
       // theme={todayBtnTheme.current}
       className="flex flex-row gap-x-12"
@@ -203,27 +208,25 @@ const Schedule = ({ trip, crewId }: ScheduleProps) => {
         <Calendar
           markingType={"period"}
           className="p-6 rounded-2xl"
-          // theme={theme.current}
+          theme={theme.current}
           markedDates={tripDates}
           enableSwipeMonths
           // onDayPress={onDayPress}
         />
-        <View className="flex items-center">
-          {
-            <Pressable
-              className={`bg-teal-500 rounded-3xl p-3 ${
-                trip?.startDate.toDate() >= new Date() ||
-                trip?.endDate.toDate() <= new Date()
-                  ? "opacity-60"
-                  : ""
-              }`}
-              onPress={() => setAboard(!aboard)}
-            >
-              <Text className="text-2xl font-bold text-center dark:text-white">
-                {aboard ? "Offboard" : "Aboard"}
-              </Text>
-            </Pressable>
-          }
+        <View className="flex items-center justify-center">
+          <Pressable
+            className={`bg-teal-500 rounded-3xl p-3 ${
+              trip?.startDate.toDate() >= new Date() ||
+              trip?.endDate.toDate() <= new Date()
+                ? "opacity-60"
+                : ""
+            }`}
+            onPress={() => setAboard(!aboard)}
+          >
+            <Text className="text-2xl font-bold text-center dark:text-white">
+              {aboard ? "Offboard" : "Aboard"}
+            </Text>
+          </Pressable>
         </View>
       </View>
       <AgendaList

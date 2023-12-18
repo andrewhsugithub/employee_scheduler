@@ -171,6 +171,7 @@ const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
             <Rollcall
               show={showRollCall}
               handleShow={(showModal: boolean) => setShowRollCall(showModal)}
+              tripId={tripId}
             />
           )}
           {showDetails && (

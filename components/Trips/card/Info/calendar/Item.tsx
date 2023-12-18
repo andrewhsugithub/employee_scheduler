@@ -5,9 +5,10 @@ import { Alert, View, Text, Button, Pressable } from "react-native";
 
 interface Item {
   title: string;
-  hour: string;
+  hour: Date;
   duration: string;
   endTime: Date;
+  startDate: Date;
 }
 
 interface ItemProps {
@@ -22,10 +23,88 @@ const AgendaItem = (props: ItemProps) => {
   const { item } = props;
   //TODO: pass in job starting date and ending date
   const endDate = item.endTime;
+  const hour = item.hour;
   //new Date("2024-10-10T00:00:00");
 
+  const latecheck = () => {
+    const nowYear = new Date().getFullYear();
+    const nowMonth = new Date().getMonth();
+    const nowDate = new Date().getDate();
+    const nowhour = new Date().getHours();
+    const nowmins = new Date().getMinutes();
+    const startYear = hour.getFullYear();
+    const startMonth = hour.getMonth();
+    const startDate = hour.getDate();
+    const starthour = hour.getHours();
+    const startmins = hour.getMinutes();
+    if (nowYear < startYear) {
+      return true;
+    } else if (nowYear > startYear) {
+      return false;
+    }
+    if (nowMonth < startMonth) {
+      return true;
+    } else if (nowMonth > startMonth) {
+      return false;
+    }
+    if (nowDate > startDate) {
+      return false;
+    } else if (nowDate < startDate) {
+      return true;
+    }
+    if (nowhour >= starthour) {
+      const dhour = (nowhour - starthour) * 60;
+      const dmins = dhour + nowmins - startmins;
+      if (dmins > 9) return false;
+      else if (dmins <= 9) return true;
+    } else if (nowhour < starthour) {
+      return true;
+    }
+  };
+
+  useEffect(() => {
+    if (!checkIn) {
+      const nowYear = new Date().getFullYear();
+      const nowMonth = new Date().getMonth();
+      const nowDate = new Date().getDate();
+      const nowHour = new Date().getHours();
+      const nowMins = new Date().getMinutes();
+      const startYear = hour?.getFullYear();
+      const startMonth = hour?.getMonth();
+      const startDate = hour?.getDate();
+      const startHour = hour?.getHours();
+      const startMins = hour?.getMinutes();
+      if (nowYear < startYear) {
+        return;
+      }
+      if (nowMonth < startMonth) {
+        return;
+      }
+      if (nowDate < startDate) {
+        return;
+      }
+      if (nowHour < startHour) {
+        return;
+      }
+      if (nowMins < startMins) {
+        return;
+      }
+      const timeId = setInterval(() => latecheck(), 1000 * 60);
+      return () => clearInterval(timeId);
+    }
+  }, []);
+
   const buttonPressed = useCallback(() => {
-    Alert.alert("Passcode: ");
+    if (!checkIn) {
+      setCheckIn(!checkIn);
+    } else if (checkIn) {
+      setCheckOut(!checkOut);
+    }
+    //if (new Date() <= hour) {
+    //  Alert.alert("cannot take attendance!");
+    //} else {
+    //  Alert.alert("Passcode: ");
+    //}
   }, []);
 
   const itemPressed = useCallback(() => {
@@ -42,9 +121,13 @@ const AgendaItem = (props: ItemProps) => {
 
   const getFormattedHour = (date: Date) => {
     const hour = date.getHours();
+    const minutes = date.getMinutes();
     const ampm = hour >= 12 ? "PM" : "AM";
     const formattedHour = hour % 12 === 0 ? 12 : hour % 12;
-    return formattedHour + ampm;
+    if (minutes < 10) {
+      return formattedHour + ":0" + minutes + ampm;
+    }
+    return formattedHour + ":" + minutes + ampm;
   };
 
   //! overtime
@@ -64,9 +147,17 @@ const AgendaItem = (props: ItemProps) => {
       className="p-5 bg-white border-b-2 border-b-slate-400 flex flex-row"
     >
       <View>
-        <Text className="text-black font-bold text-sm">{item.title}</Text>
-        <Text className="text-xs text-black">
-          {item.hour} ~ {getFormattedHour(item.endTime)}
+        <Text className="text-black font-bold text-sm text-left">
+          {" "}
+          {item.title}
+        </Text>
+        <Text className="text-black font-bold text-sm text-left">
+          {" "}
+          {`${latecheck() ? "not late" : "late"}`}
+        </Text>
+        <Text className="text-xs text-black text-left">
+          {" "}
+          {getFormattedHour(item.hour)} ~ {getFormattedHour(item.endTime)}
         </Text>
       </View>
 

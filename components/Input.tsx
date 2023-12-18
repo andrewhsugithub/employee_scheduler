@@ -10,6 +10,9 @@ interface InputProps<T extends FieldValues> {
   name: string;
   label: string;
   classname?: string;
+  left?: React.ReactNode;
+  right?: React.ReactNode;
+  isPassword?: boolean;
 }
 
 const Input = <T extends FieldValues>({
@@ -18,6 +21,9 @@ const Input = <T extends FieldValues>({
   name,
   label,
   classname,
+  left,
+  isPassword,
+  right,
 }: InputProps<T>) => {
   const errorMessage = errors?.[name]?.message;
 
@@ -48,6 +54,9 @@ const Input = <T extends FieldValues>({
                   // start: "5%",
                   display: "none",
                 }}
+                left={left}
+                right={right}
+                secureTextEntry={isPassword}
               />
             </View>
           );

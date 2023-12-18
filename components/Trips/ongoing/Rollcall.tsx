@@ -3,24 +3,27 @@ import { useEffect, useState } from "react";
 import { SafeAreaView, View, Text, Pressable, Modal } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { TextInput } from "react-native-paper";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface RollCallProps {
   show: boolean;
   handleShow: (showModal: boolean) => void;
+  tripId: string;
 }
 
-const RollCall = ({ show, handleShow }: RollCallProps) => {
+const RollCall = ({ show, handleShow, tripId }: RollCallProps) => {
   const router = useRouter();
   const [showSchedule, setShowSchedule] = useState(false); //! is this redundant? we can use const instead of state
-  const [code, setCode] = useState("");
+  const [seePass, setSeePass] = useState(false);
+  const [password, setPassword] = useState("");
 
-  const handleVerify = (codeToVerify: string) => {
-    if (codeToVerify === code) {
-      setShowSchedule(true);
-    } else {
-      alert("Incorrect Code");
+  useEffect(() => {
+    async function getPassword() {
+      const password = await AsyncStorage.getItem(tripId);
+      setPassword(password!);
     }
-  };
+    getPassword();
+  }, []);
 
   return (
     <Modal animationType="slide" visible={show} transparent={true}>
@@ -32,20 +35,24 @@ const RollCall = ({ show, handleShow }: RollCallProps) => {
 
           <Text>QR Code:</Text>
 
-          <View className="py-4 space-x-4 flex flex-row mr-2 h-26">
-            <TextInput
-              label="Enter Verification Code"
-              onChangeText={(text) => setCode(text)}
-              mode="outlined"
-              className="w-4/5"
-            />
-            <Pressable
-              className="bg-green-500 p-4 rounded-full w-1/5"
-              onPress={(code) => handleVerify}
-            >
-              <Text className="text-xl text-center">確認</Text>
-            </Pressable>
-          </View>
+          {/* <View className="py-4 space-x-4 flex flex-row mr-2 h-26"> */}
+          <TextInput
+            label="Your Passcode for this trip"
+            secureTextEntry={seePass ? false : true}
+            value={password}
+            editable={false}
+            right={
+              seePass ? (
+                <TextInput.Icon
+                  onPress={() => setSeePass(false)}
+                  icon="eye-off"
+                />
+              ) : (
+                <TextInput.Icon onPress={() => setSeePass(true)} icon="eye" />
+              )
+            }
+          />
+          {/* </View> */}
 
           {/* <View className="flex items-center justify-center">
             <Text className="text-blue-300">

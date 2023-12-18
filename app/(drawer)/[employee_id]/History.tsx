@@ -17,6 +17,12 @@ import { db } from "@/lib/firebase";
 import { doc } from "firebase/firestore";
 import RegisterTrip from "@/components/trips/RegisterTrip";
 import useFetch from "@/hooks/useFetch";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+interface Trip {
+  id: string;
+  password: string;
+}
 
 const History = () => {
   const colorScheme = useColorScheme();
@@ -28,6 +34,10 @@ const History = () => {
   const { loading, data } = useFetch(doc(db, "users", captainId!), true);
 
   useEffect(() => {
+    data?.trips?.forEach(async (trip: any) => {
+      await AsyncStorage.setItem(`${trip?.id}`, trip?.password);
+    });
+
     setPastTrips(
       data?.trips
         ?.filter((trip: any) => trip.end_date.toDate() < new Date())
@@ -39,7 +49,7 @@ const History = () => {
     <SafeAreaView className="h-full">
       <ScrollView>
         <View className="p-3">
-          <View className="border-b-8 dark:border-white">
+          <View className="border-b-4 dark:border-white">
             <Text className="font-extrabold text-4xl py-4 dark:text-white ">
               History:{" "}
             </Text>
@@ -53,7 +63,7 @@ const History = () => {
               ))}
               <Pressable className="m-8" onPress={() => setShowModal(true)}>
                 <View className="bg-transparent rounded-2xl flex-1 p-4 w-full">
-                  <View className="border-dashed border-8 dark:border-white p-20 rounded-2xl h-full">
+                  <View className="border-dashed border-4 dark:border-white p-20 rounded-2xl h-full">
                     <View className="flex flex-col items-center justify-evenly h-full">
                       <Text className="font-black text-7xl dark:text-white">
                         +
