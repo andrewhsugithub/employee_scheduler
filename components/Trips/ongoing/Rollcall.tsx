@@ -8,22 +8,22 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 interface RollCallProps {
   show: boolean;
   handleShow: (showModal: boolean) => void;
-  tripId: string;
+  password: string;
 }
 
-const RollCall = ({ show, handleShow, tripId }: RollCallProps) => {
+const RollCall = ({ show, handleShow, password }: RollCallProps) => {
   const router = useRouter();
   const [showSchedule, setShowSchedule] = useState(false); //! is this redundant? we can use const instead of state
   const [seePass, setSeePass] = useState(false);
-  const [password, setPassword] = useState("");
+  // const [password, setPassword] = useState("");
 
-  useEffect(() => {
-    async function getPassword() {
-      const password = await AsyncStorage.getItem(tripId);
-      setPassword(password!);
-    }
-    getPassword();
-  }, []);
+  // useEffect(() => {
+  //   async function getPassword() {
+  //     const password = await AsyncStorage.getItem(tripId);
+  //     setPassword(password!);
+  //   }
+  //   getPassword();
+  // }, []);
 
   return (
     <Modal animationType="slide" visible={show} transparent={true}>

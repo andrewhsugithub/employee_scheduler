@@ -3,11 +3,11 @@ import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { TextInput } from "react-native-paper";
 import { Searchbar, IconButton } from "react-native-paper";
 import * as React from "react";
-import { getAuth } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 
 import CrewChip from "../CrewChip";
+import { useGetCollectionContext } from "@/context/getCollectionContext";
 
 interface User {
   name: string;
@@ -22,7 +22,7 @@ interface AddCrewPageProps {
 }
 
 const AddCrewPage = ({ fields, prepend, remove, users }: AddCrewPageProps) => {
-  const auth = getAuth();
+  const { currentAuth: auth } = useGetCollectionContext();
 
   const [searchQuery, setSearchQuery] = useState("");
   const onChangeSearch = (query: string) => setSearchQuery(query);
@@ -52,7 +52,7 @@ const AddCrewPage = ({ fields, prepend, remove, users }: AddCrewPageProps) => {
                 prepend={prepend}
                 remove={remove}
                 fields={fields}
-                isCaptain={auth.currentUser?.uid === user.id}
+                isCaptain={auth?.uid === user.id}
               />
             ))}
           </View>

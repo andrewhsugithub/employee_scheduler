@@ -1,7 +1,6 @@
 ﻿import AddTripButton from "@/components/trips/AddTripButton";
 import Info from "@/components/trips/Info";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
-import { getAuth } from "firebase/auth";
 import { useState } from "react";
 import { SafeAreaView, View, Text, Pressable, ScrollView } from "react-native";
 
@@ -9,7 +8,6 @@ const tripList = ["trip1", "trip2", "trip3", "trip4", "trip5"];
 
 const AcceptTrips = () => {
   const [toggleModal, setToggleModal] = useState(false);
-  const auth = getAuth();
 
   return (
     <SafeAreaView className="h-full ">

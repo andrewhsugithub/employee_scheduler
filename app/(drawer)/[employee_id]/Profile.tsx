@@ -7,15 +7,15 @@ import {
   getDocFromCache,
   onSnapshot,
 } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
 import { useCheckConnectionContext } from "@/context/checkConnectionContext";
+import { useGetCollectionContext } from "@/context/getCollectionContext";
 
 // TODO: make editable
 const Profile = () => {
   const { isConnected } = useCheckConnectionContext();
-  const user = getAuth().currentUser;
+  const { currentAuth: user } = useGetCollectionContext();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -27,7 +27,7 @@ const Profile = () => {
     let userSnap;
 
     if (isConnected) userSnap = await getDoc(userRef);
-    else userSnap = await getDocFromCache(userRef);
+    else userSnap = await getDoc(userRef);
 
     if (userSnap.exists()) {
       const { email, name, phone_number } = userSnap.data();

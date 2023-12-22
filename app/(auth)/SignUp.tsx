@@ -58,7 +58,7 @@ const Auth = () => {
 
       const user = {
         name: data.username,
-        email: data.email,
+        email: data.email.trim(),
         phone_number: phone,
         created_at: new Date().toUTCString(),
       };
@@ -72,6 +72,7 @@ const Auth = () => {
       await AsyncStorage.setItem("email", data.email.trim());
       await AsyncStorage.setItem("password", data.password);
       await AsyncStorage.setItem("username", data.username);
+      await AsyncStorage.setItem("userId", userCredential.user.uid);
     } catch (err) {
       console.log(err);
       alert(err);
@@ -91,7 +92,7 @@ const Auth = () => {
     resolver: zodResolver(AuthSchema),
   });
   const [passwordVisible, setPasswordVisible] = useState(true);
-  const [passwordVisibledouble, setPasswordVisibledouble] = useState(true);
+  const [passwordVisibleDouble, setPasswordVisibleDouble] = useState(true);
   return (
     <SafeAreaView className="h-screen">
       <View className="h-full p-40 flex flex-col justify-around ">
@@ -105,132 +106,65 @@ const Auth = () => {
             name="username"
             label={"👤Name"}
           />
-          {/* <Controller
-          control={control}
-          name="username"
-          render={({
-            field: { onChange, onBlur, value },
-            fieldState: { error },
-          }) => {
-            return (
-              <View className="flex flex-row p-2">
-                <TextInput
-                  label="👤Name"
-                  onBlur={onBlur}
-                  value={value}
-                  mode="outlined"
-                  onChangeText={onChange}
-                  className=" flex-1 rounded-full"
-                />
-              </View>
-            );
-          }}
-        />
-        {errors?.username?.message && <Text>{errors?.username?.message}</Text>} */}
           <Input
             control={control}
             errors={errors}
             name="email"
             label={"📧Email"}
           />
-          {/* <Controller
-          control={control}
-          name="email"
-          render={({
-            field: { onChange, onBlur, value },
-            fieldState: { error },
-          }) => {
-            return (
-              <View className="flex flex-row p-2">
-                <TextInput
-                  label="📧Email"
-                  onBlur={onBlur}
-                  value={value}
-                  inputMode="email"
-                  onChangeText={onChange}
-                  mode="outlined"
-                  className=" flex-1 rounded-full"
-                />
-              </View>
-            );
-          }}
-        />
-        {errors?.email?.message && <Text>{errors?.email?.message}</Text>} */}
           <Input
             control={control}
             errors={errors}
             name="password"
             label={"🔒Password"}
-          />
-          {/* <Controller
-          control={control}
-          name="password"
-          render={({
-            field: { onChange, onBlur, value },
-            fieldState: { error },
-          }) => {
-            return (
-              <View className="flex flex-row p-2">
-                <TextInput
-                  label="🔒Password"
-                  onBlur={onBlur}
-                  value={value}
-                  secureTextEntry={passwordVisible}
-                  onChangeText={onChange}
-                  mode="outlined"
-                  right={
-                    <TextInput.Icon
-                      icon={passwordVisible ? "eye" : "eye-off"}
-                      onPress={() => setPasswordVisible(!passwordVisible)}
-                    />
-                  }
-                  className=" flex-1 rounded-full"
+            isPassword={!passwordVisible}
+            right={
+              !passwordVisible ? (
+                <TextInput.Icon
+                  onPress={() => {
+                    console.log("Eye-off pressed");
+                    setPasswordVisible(!passwordVisible);
+                  }}
+                  icon="eye-off"
                 />
-              </View>
-            );
-          }}
-        />
-        {errors?.password?.message && <Text>{errors?.password?.message}</Text>} */}
+              ) : (
+                <TextInput.Icon
+                  onPress={() => {
+                    console.log("Eye-on pressed");
+                    setPasswordVisible(!passwordVisible);
+                  }}
+                  icon="eye"
+                />
+              )
+            }
+          />
+
           <Input
             control={control}
             errors={errors}
             name="confirmPassword"
             label={"🔒Confirm Password"}
-          />
-          {/* <Controller
-          control={control}
-          name="confirmPassword"
-          render={({
-            field: { onChange, onBlur, value },
-            fieldState: { error },
-          }) => {
-            return (
-              <View className="flex flex-row p-2">
-                <TextInput
-                  label="🔒Confirm Password"
-                  onBlur={onBlur}
-                  value={value}
-                  secureTextEntry={passwordVisibledouble}
-                  onChangeText={onChange}
-                  mode="outlined"
-                  activeOutlineColor="black"
-                  right={
-                    <TextInput.Icon
-                      icon={passwordVisibledouble ? "eye" : "eye-off"}
-                      onPress={() =>
-                        setPasswordVisibledouble(!passwordVisibledouble)
-                      }
-                    />
-                  }
-                  className="flex-1 rounded-full mb-4"
+            isPassword={!passwordVisibleDouble}
+            right={
+              !passwordVisibleDouble ? (
+                <TextInput.Icon
+                  onPress={() => {
+                    console.log("Eye-off pressed");
+                    setPasswordVisibleDouble(!passwordVisibleDouble);
+                  }}
+                  icon="eye-off"
                 />
-              </View>
-            );
-          }}
-        />
-        {errors?.confirmPassword?.message && (
-          <Text>{errors?.confirmPassword?.message}</Text>
-        )} */}
+              ) : (
+                <TextInput.Icon
+                  onPress={() => {
+                    console.log("Eye-on pressed");
+                    setPasswordVisibleDouble(!passwordVisibleDouble);
+                  }}
+                  icon="eye"
+                />
+              )
+            }
+          />
           <View>
             <PhoneInput
               ref={phoneInput}

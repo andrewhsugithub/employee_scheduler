@@ -1,13 +1,13 @@
 ﻿import { Control, FieldErrors } from "react-hook-form";
 import { View } from "react-native";
 import { TextInput } from "react-native-paper";
-import { getAuth } from "firebase/auth";
 import Input from "../Input";
 import {
   type RegisterFormSchema,
   RegisterSchema,
 } from "@/lib/validations/registerSchema";
 import DateInput from "../DateInput";
+import { useGetCollectionContext } from "@/context/getCollectionContext";
 
 interface TripInfoProps {
   control: Control<RegisterFormSchema>;
@@ -15,7 +15,7 @@ interface TripInfoProps {
 }
 
 const RegisterTripInfo = ({ control, errors }: TripInfoProps) => {
-  const auth = getAuth().currentUser;
+  const { currentAuth: auth } = useGetCollectionContext();
 
   return (
     <View className="flex flex-col p-3">

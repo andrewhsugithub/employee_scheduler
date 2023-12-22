@@ -8,7 +8,7 @@ export function getTheme() {
 
   return {
     // arrows
-    arrowColor: "black",
+    arrowColor: "gray",
     arrowStyle: { padding: 0 },
     // knob
     expandableKnobColor: themeColor,
@@ -31,12 +31,12 @@ export function getTheme() {
     // textDayStyle: { marginTop: Platform.OS === "android" ? 2 : 4 },
     // selected date
     selectedDayBackgroundColor: themeColor,
-    selectedDayTextColor: "white",
+    selectedDayTextColor: "black",
     // disabled date
     textDisabledColor: disabledColor,
     // dot (marked date)
     dotColor: themeColor,
-    selectedDotColor: "white",
+    selectedDotColor: "black",
     disabledDotColor: disabledColor,
     // dotStyle: { marginTop: -2 },
   } as Theme;

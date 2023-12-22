@@ -1,4 +1,5 @@
 import { CheckConnectionProvider } from "@/context/checkConnectionContext";
+import { GetCollectionProvider } from "@/context/getCollectionContext";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import {
   DarkTheme,

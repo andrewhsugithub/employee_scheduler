@@ -1,5 +1,6 @@
 ﻿import { createContext, useContext, useEffect, useState } from "react";
 import NetInfo from "@react-native-community/netinfo";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface ConnectionType {
   connectionType: string;
@@ -25,16 +26,32 @@ export const CheckConnectionProvider = ({
 }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [connectionType, setConnectionType] = useState("");
+  console.log("connectionType: ", connectionType, "isConnected: ", isConnected);
+
+  const hello = async () => {
+    const user = await AsyncStorage.getItem("allUsers");
+    const trip = await AsyncStorage.getItem("trips");
+    const job = await AsyncStorage.getItem("jobs");
+    console.log(
+      "jobs\n",
+      JSON.parse(job!),
+      "\ntrips\n",
+      JSON.parse(trip!),
+      "\nusers\n",
+      JSON.parse(user!)
+    );
+  };
 
   useEffect(() => {
     // TODO make into a react context provider
     const unsubscribe = NetInfo.addEventListener((state) => {
       console.log("Connection type", state.type);
       console.log("Is connected?", state.isConnected);
+      hello();
       setIsConnected(state.isConnected!);
       setConnectionType(state.type!);
     });
-    return unsubscribe();
+    return () => unsubscribe();
   }, []);
 
   return (

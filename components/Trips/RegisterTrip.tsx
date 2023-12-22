@@ -8,6 +8,7 @@
   KeyboardAvoidingView,
 } from "react-native";
 import {
+  CollectionReference,
   addDoc,
   arrayUnion,
   collection,
@@ -21,11 +22,16 @@ import { useEffect, useState } from "react";
 import {
   type RegisterFormSchema,
   RegisterSchema,
+  type JobFormSchema,
 } from "@/lib/validations/registerSchema";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import {
+  Controller,
+  NonUndefined,
+  useFieldArray,
+  useForm,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TextInput } from "react-native-paper";
-import { getAuth } from "firebase/auth";
 import PickDate from "../PickDate";
 import AddCrewPage from "./AddCrewPage";
 import AddJobPage from "./AddJobPage";
@@ -33,6 +39,9 @@ import JobForm from "../JobForm";
 import {} from "firebase/firestore";
 import RegisterTripInfo from "./RegisterTripInfo";
 import useFetch from "@/hooks/useFetch";
+import { Button, Dialog, Portal, PaperProvider } from "react-native-paper";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useGetCollectionContext } from "@/context/getCollectionContext";
 
 interface RegisterTripProps {
   show: boolean;
@@ -41,40 +50,110 @@ interface RegisterTripProps {
 
 const RegisterTrip = ({ show, handleShow }: RegisterTripProps) => {
   const [pageIndex, setPageIndex] = useState(0);
-  const captainId = getAuth().currentUser?.uid;
+  const [showError, setShowError] = useState(false);
+  const [error, setError] = useState("error");
+  const [visible, setVisible] = useState(false);
+
+  const { currentAuth } = useGetCollectionContext();
+  const captainId = currentAuth?.uid;
   const colorScheme = useColorScheme();
 
-  const { loading: loadUsers, data: allUsers } = useFetch(
-    collection(db, "users"),
-    false
-  );
+  // const { loading: loadUsers, userList: allUsers } = useFetch(
+  //   collection(db, "users"),
+  //   false,
+  //   "users"
+  // );
 
-  const [users, setUsers] = useState<User[]>([]);
-  useEffect(() => {
-    const userList: User[] = [];
-    allUsers?.forEach((user: any) => {
-      userList.push({ id: user.id, name: user.data().name });
-    });
-    setUsers(userList);
-  }, [allUsers]);
+  const { userLoading: loadUsers, userList: allUsers } =
+    useGetCollectionContext();
+
+  // const [users, setUsers] = useState<User[]>([]);
+  // useEffect(() => {
+  //   const userList: User[] = [];
+  //   allUsers?.forEach((user: any) => {
+  //     userList.push({ id: user.id, name: user.data().name });
+  //   });
+  //   setUsers(userList);
+  // }, [allUsers]);
+
+  const addJob = async (
+    jobRef: CollectionReference,
+    jobData: JobFormSchema
+  ) => {
+    console.log("jobData: ", jobData);
+    const job = {
+      expected_starting_datetime: jobData.startDate,
+      expected_ending_datetime: jobData.endDate,
+      job_name: jobData.jobName,
+      real_starting_datetime: jobData.startDate,
+      real_ending_datetime: jobData.endDate,
+      is_present: false,
+      is_late: false, // if >10min=>late
+      has_complete_job: false,
+      has_worked_overtime: false,
+    };
+
+    try {
+      const addedJob = await addDoc(jobRef, job);
+      //* put jobs into local storage
+      const jobsCollection = await AsyncStorage.getItem("jobs");
+      await AsyncStorage.setItem(
+        "jobs",
+        JSON.stringify({
+          ...JSON.parse(jobsCollection!),
+          [addedJob.id]: job,
+        })
+      );
+
+      return { id: addedJob.id, start_date: jobData.startDate };
+    } catch (err: any) {
+      console.log(err);
+      setShowError(true);
+      setError(err.message);
+    }
+  };
 
   const registerTrip = async (data: RegisterFormSchema) => {
+    const jobRef = collection(db, "jobs");
+    const captainJobInfo = await Promise.all(
+      data.captain_job.map(async (job: JobFormSchema) => {
+        const jobInfo = await addJob(jobRef, job);
+        if (jobInfo !== undefined) return jobInfo!;
+      })
+    );
+
+    const crewInfo = await Promise.all(
+      data.crew.map(async (crew: any) => {
+        const crewJobInfo = await Promise.all(
+          crew.crew_job.map(async (job: JobFormSchema) => {
+            const jobInfo = await addJob(jobRef, job);
+            if (jobInfo !== undefined) return jobInfo!;
+          })
+        );
+        return {
+          crew_id: crew.crew_id,
+          crew_jobs: crewJobInfo,
+          crew_name:
+            allUsers![
+              allUsers!.findIndex((user: User) => user.id === crew.crew_id)
+            ]?.name,
+          crew_pass: Math.random().toString(36).slice(-8),
+        };
+      })
+    );
+
     const trip = {
       trip_name: data.trip_name,
       captain_id: captainId,
       captain_name:
-        users[users.findIndex((user) => user.id === captainId!)].name,
-      captain_job: data.captain_job,
+        allUsers![allUsers!.findIndex((user: User) => user.id === captainId!)]
+          ?.name,
+      captain_job: captainJobInfo,
+      captain_pass: Math.random().toString(36).slice(-8),
       location: data.location,
       start_date: data.startDate,
       end_date: data.endDate,
-      crew: data.crew.map((crew: any) => {
-        return {
-          crew_name:
-            users[users.findIndex((user) => user.id === crew.crew_id)].name,
-          ...crew,
-        };
-      }),
+      crew: crewInfo,
       created_at: new Date().toUTCString(),
       updated_at: new Date().toUTCString(),
     };
@@ -82,32 +161,80 @@ const RegisterTrip = ({ show, handleShow }: RegisterTripProps) => {
     try {
       const tripsRef = collection(db, "trips");
       const addedTrip = await addDoc(tripsRef, trip);
+      //* put into trip local storage
+      const tripCollection = await AsyncStorage.getItem("trips");
+      await AsyncStorage.setItem(
+        "trips",
+        JSON.stringify({
+          ...JSON.parse(tripCollection!),
+          [addedTrip.id]: trip,
+        })
+      );
 
       const userRef = doc(db, "users", captainId!);
       await updateDoc(userRef, {
         trips: arrayUnion({
           id: addedTrip.id,
-          password: Math.random().toString(36).slice(-8),
           start_date: data.startDate,
           end_date: data.endDate,
         }),
       });
-      data.crew.map(async (crew: any) => {
+      //* put into current user local storage
+      const localStringifyCurrentUserRef = await AsyncStorage.getItem(
+        captainId!
+      );
+      const localCurrentUserRef = JSON.parse(localStringifyCurrentUserRef!);
+      await AsyncStorage.setItem(
+        captainId!,
+        JSON.stringify({
+          ...localCurrentUserRef,
+          trips: [
+            ...localCurrentUserRef.trips,
+            {
+              id: addedTrip.id,
+              start_date: data.startDate,
+              end_date: data.endDate,
+            },
+          ],
+        })
+      );
+
+      data.crew.map(async (crew: any, index) => {
         const userRef = doc(db, "users", crew.crew_id!);
         await updateDoc(userRef, {
           trips: arrayUnion({
             id: addedTrip.id,
-            password: Math.random().toString(36).slice(-8),
             start_date: data.startDate,
             end_date: data.endDate,
           }),
         });
+        //* put into user local storage i don't care because it isn't me
+        // const localStringifyCrewRef = await AsyncStorage.getItem(
+        //   crew[index].crew_id
+        // );
+        // const localCrewRef = JSON.parse(localStringifyCrewRef!);
+        // await AsyncStorage.setItem(
+        //   crew[index].crew_id,
+        //   JSON.stringify({
+        //     ...localCrewRef,
+        //     trips: [
+        //       ...localCrewRef.trips,
+        //       {
+        //         id: addedTrip.id,
+        //         start_date: data.startDate,
+        //         end_date: data.endDate,
+        //       },
+        //     ],
+        //   })
+        // );
       });
       reset({ ...data });
       console.log("success", trip);
       handleShow(false);
-    } catch (err) {
+    } catch (err: any) {
       console.log("err: ", err);
+      setShowError(true);
+      setError(err.message);
     }
     setPageIndex(0);
   };
@@ -126,6 +253,33 @@ const RegisterTrip = ({ show, handleShow }: RegisterTripProps) => {
     name: "crew",
     control,
   });
+
+  if (showError) {
+    const showDialog = () => setVisible(true);
+    const hideDialog = () => setVisible(false);
+    return (
+      <PaperProvider>
+        <View>
+          <Button onPress={showDialog}>
+            <Text className="text-base text-white">Show Error</Text>
+          </Button>
+          <Portal>
+            <Dialog visible={visible} onDismiss={hideDialog}>
+              <Dialog.Title>Error</Dialog.Title>
+              <Dialog.Content>
+                <Text className="text-base text-white">{error}</Text>
+              </Dialog.Content>
+              <Dialog.Actions>
+                <Button onPress={hideDialog}>
+                  <Text className="text-base text-white">Hide</Text>
+                </Button>
+              </Dialog.Actions>
+            </Dialog>
+          </Portal>
+        </View>
+      </PaperProvider>
+    );
+  }
 
   return (
     <Modal animationType="slide" visible={show} presentationStyle="pageSheet">
@@ -156,7 +310,7 @@ const RegisterTrip = ({ show, handleShow }: RegisterTripProps) => {
                 fields={fields}
                 prepend={prepend}
                 remove={remove}
-                users={users}
+                users={allUsers! as User[]}
               />
             </View>
             {/* ADD JOB FORM PAGE 3 */}
@@ -165,7 +319,7 @@ const RegisterTrip = ({ show, handleShow }: RegisterTripProps) => {
                 control={control}
                 errors={errors}
                 crewArray={fields}
-                users={users}
+                users={allUsers! as User[]}
               />
             </View>
             <AntDesign

@@ -13,9 +13,9 @@ import { TextInput } from "react-native-paper";
 import PickDate from "./PickDate";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { collection, addDoc } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
 import Input from "./Input";
 import DateInput from "./DateInput";
+import { useGetCollectionContext } from "@/context/getCollectionContext";
 
 interface JobFormProps {
   crewId: string;
@@ -26,7 +26,8 @@ interface JobFormProps {
 
 const JobForm = ({ crewId, control, errors, crewIndex }: JobFormProps) => {
   // const [toggle, setToggle] = useState(false);
-  const captainId = getAuth().currentUser?.uid;
+  const { currentAuth } = useGetCollectionContext();
+  const captainId = currentAuth?.uid;
 
   const jobRole: "captain_job" | `crew.${number}.crew_job` =
     crewId !== captainId ? `crew.${crewIndex}.crew_job` : "captain_job";

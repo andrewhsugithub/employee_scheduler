@@ -2,13 +2,14 @@
 import { Card, Paragraph, ProgressBar } from "react-native-paper";
 import { Pressable, View } from "react-native";
 import InfoButton from "./InfoButton";
-import { DocumentData, doc, onSnapshot } from "firebase/firestore";
+import { DocumentData, Timestamp, doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Info from "../Info";
 import Rollcall from "../ongoing/Rollcall";
 import Table from "../TableComponents";
 import RegisterTrip from "../RegisterTrip";
 import useFetch from "@/hooks/useFetch";
+import { useGetCollectionContext } from "@/context/getCollectionContext";
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -55,6 +56,7 @@ interface TripCardProps {
 }
 
 const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
+  const { currentAuth: auth } = useGetCollectionContext();
   const [crew, setCrew] = useState<User[]>([]);
   const [formattedStartingDate, setFormattedStartingDate] = useState<string>();
   const [formattedEndingDate, setFormattedEndingDate] = useState<string>();
@@ -67,13 +69,19 @@ const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
   const [showDetails, setShowDetails] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
 
+  const [crewPass, setCrewPass] = useState("");
+
   const { loading: loadTrip, data: tripData } = useFetch(
     doc(db, "trips", tripId!),
-    true
+    true,
+    "trips",
+    tripId!
   );
 
   useEffect(() => {
     if (loadTrip) return;
+
+    console.log("tripData:", tripData, tripId!);
 
     setCrew([
       {
@@ -85,12 +93,27 @@ const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
       }),
     ]);
 
-    const startingDate = tripData?.startDate.toDate();
-    const endingDate = tripData?.endDate.toDate();
+    const startingDate = new Timestamp(
+      tripData?.start_date.seconds,
+      tripData?.start_date.nanoseconds
+    ).toDate();
+    const endingDate = new Timestamp(
+      tripData?.end_date.seconds,
+      tripData?.end_date.nanoseconds
+    ).toDate();
+
     setFormattedStartingDate(formatDate(startingDate!.toISOString()));
     setFormattedEndingDate(formatDate(endingDate!.toISOString()));
     setTripInterval(subtractDates(endingDate!, startingDate!));
     setProgress(getProgress(startingDate!, endingDate!));
+
+    setCrewPass(
+      tripData?.captain_id !== auth?.uid
+        ? tripData?.crew[
+            tripData?.crew.findIndex((crew: any) => crew.crew_id === auth?.uid)
+          ]?.crew_pass
+        : tripData?.captain_pass
+    );
   }, [tripData, loadTrip]);
 
   useEffect(() => {
@@ -100,7 +123,7 @@ const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
   return (
     <>
       <Pressable
-        className="p-3 m-8"
+        className="p-3 m-0"
         onLongPress={() => setExpanded(!expanded)}
         onPress={() => setExpanded(false)}
       >
@@ -171,13 +194,14 @@ const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
             <Rollcall
               show={showRollCall}
               handleShow={(showModal: boolean) => setShowRollCall(showModal)}
-              tripId={tripId}
+              password={crewPass}
             />
           )}
           {showDetails && (
             <Table
               show={showDetails}
               handleShow={(showModal: boolean) => setShowDetails(showModal)}
+              trips={tripData!}
             />
           )}
         </>

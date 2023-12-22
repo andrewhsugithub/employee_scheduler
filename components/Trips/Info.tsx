@@ -9,7 +9,6 @@
 import { useEffect, useState } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { DocumentData } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
 import {
   JobSchema,
   type JobFormSchema,
@@ -17,6 +16,7 @@ import {
 import Schedule from "./card/Info/Schedule";
 import { Divider, List, Searchbar, TextInput } from "react-native-paper";
 import { ScrollView } from "react-native-gesture-handler";
+import { useGetCollectionContext } from "@/context/getCollectionContext";
 
 interface TripProps {
   name: string;
@@ -27,7 +27,7 @@ interface TripProps {
 }
 
 const Info = ({ name, show, handleShow, trips, crew }: TripProps) => {
-  const auth = getAuth().currentUser;
+  const { currentAuth: auth } = useGetCollectionContext();
   const colorSheme = useColorScheme();
   const [selectedCrew, setSelectedCrew] = useState<User>({
     id: auth?.uid!,

@@ -1,5 +1,6 @@
 ﻿//! TEXT INPUT
 
+import { useState } from "react";
 import { Control, Controller, FieldErrors, FieldValues } from "react-hook-form";
 import { View } from "react-native";
 import { HelperText, TextInput } from "react-native-paper";

@@ -17,6 +17,7 @@ import DrawerContent from "@/components/drawer/DrawerContent";
 import { getAuth, signOut } from "firebase/auth";
 import { Badge } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { GetCollectionProvider } from "@/context/getCollectionContext";
 
 export default function DrawerLayout() {
   const auth = getAuth();
@@ -92,80 +93,80 @@ export default function DrawerLayout() {
 
   const handleLogout = async () => {
     await signOut(auth);
-    await AsyncStorage.removeItem("email");
-    await AsyncStorage.removeItem("password");
-    await AsyncStorage.removeItem("username");
+    await AsyncStorage.clear();
     router.push("/(auth)/SignIn");
   };
 
   const handleNotificationInbox = () => {};
 
   return (
-    <Drawer
-      screenOptions={{
-        headerShown: true,
-        overlayColor: orientation >= 3 ? "transparent" : "rgba(0,0,0,0.5)",
-        drawerType: drawerType,
-        headerLeft: () => (
-          <Pressable onPress={onPressHandler} className="m-2">
-            <Feather
-              name="sidebar"
-              size={28}
-              color={`${colorScheme === "dark" ? "white" : "black"}`}
-            />
-          </Pressable>
-        ),
-        headerRight: () => (
-          <View className="flex flex-row">
-            <Pressable className="m-2" onPress={handleNotificationInbox}>
-              <Ionicons
-                name="notifications"
-                size={24}
-                color={`${colorScheme === "dark" ? "white" : "black"}`}
-              />
-              <Badge size={10} className="absolute z-40" />
-            </Pressable>
-            <Pressable className="m-2" onPress={handleLogout}>
+    <GetCollectionProvider>
+      <Drawer
+        screenOptions={{
+          headerShown: true,
+          overlayColor: orientation >= 3 ? "transparent" : "rgba(0,0,0,0.5)",
+          drawerType: drawerType,
+          headerLeft: () => (
+            <Pressable onPress={onPressHandler} className="m-2">
               <Feather
-                name="log-out"
+                name="sidebar"
                 size={28}
                 color={`${colorScheme === "dark" ? "white" : "black"}`}
               />
             </Pressable>
-          </View>
-        ),
-      }}
-      defaultStatus="open"
-      drawerContent={(props) => <DrawerContent {...props} />}
-    >
-      <Drawer.Screen
-        name="[employee_id]/MyTrips"
-        options={{
-          drawerLabel: "Trips",
-          title: "My Trips",
+          ),
+          headerRight: () => (
+            <View className="flex flex-row">
+              <Pressable className="m-2" onPress={handleNotificationInbox}>
+                <Ionicons
+                  name="notifications"
+                  size={24}
+                  color={`${colorScheme === "dark" ? "white" : "black"}`}
+                />
+                <Badge size={10} className="absolute z-40" />
+              </Pressable>
+              <Pressable className="m-2" onPress={handleLogout}>
+                <Feather
+                  name="log-out"
+                  size={28}
+                  color={`${colorScheme === "dark" ? "white" : "black"}`}
+                />
+              </Pressable>
+            </View>
+          ),
         }}
-      />
-      <Drawer.Screen
-        name="[employee_id]/AcceptTrips"
-        options={{
-          drawerLabel: "Accept",
-          title: "Accept Trips Page",
-        }}
-      />
-      <Drawer.Screen
-        name="[employee_id]/History"
-        options={{
-          drawerLabel: "History",
-          title: "History Page",
-        }}
-      />
-      <Drawer.Screen
-        name="[employee_id]/Profile"
-        options={{
-          drawerLabel: "Profile",
-          title: "Profile Page",
-        }}
-      />
-    </Drawer>
+        defaultStatus="open"
+        drawerContent={(props) => <DrawerContent {...props} />}
+      >
+        <Drawer.Screen
+          name="[employee_id]/MyTrips"
+          options={{
+            drawerLabel: "Trips",
+            title: "My Trips",
+          }}
+        />
+        <Drawer.Screen
+          name="[employee_id]/AcceptTrips"
+          options={{
+            drawerLabel: "Accept",
+            title: "Accept Trips Page",
+          }}
+        />
+        <Drawer.Screen
+          name="[employee_id]/History"
+          options={{
+            drawerLabel: "History",
+            title: "History Page",
+          }}
+        />
+        <Drawer.Screen
+          name="[employee_id]/Profile"
+          options={{
+            drawerLabel: "Profile",
+            title: "Profile Page",
+          }}
+        />
+      </Drawer>
+    </GetCollectionProvider>
   );
 }

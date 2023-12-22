@@ -2,7 +2,7 @@
 import { List } from "react-native-paper";
 import JobForm from "@/components/JobForm";
 import { useState } from "react";
-import { getAuth } from "firebase/auth";
+import { useGetCollectionContext } from "@/context/getCollectionContext";
 
 // TODO turn into realtime database and make sure referential integrity
 
@@ -19,9 +19,11 @@ interface AddJobPageProps {
 }
 
 const AddJobPage = ({ control, errors, crewArray, users }: AddJobPageProps) => {
-  const captain = getAuth().currentUser?.displayName;
   const colorScheme = useColorScheme();
-  const captainId = getAuth().currentUser?.uid;
+  const { currentAuth } = useGetCollectionContext();
+
+  const captain = currentAuth?.displayName;
+  const captainId = currentAuth?.uid;
   const crewNames = [
     { name: captain!, id: captainId! } as User,
     ...users.reduce((acc: User[], user: User) => {

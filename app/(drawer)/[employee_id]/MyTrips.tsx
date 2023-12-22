@@ -8,99 +8,147 @@ import {
   ScrollView,
   useColorScheme,
   ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import AddTripButton from "@/components/trips/AddTripButton";
 import TripCard from "@/components/trips/card/TripCard";
-import { useEffect, useState } from "react";
-import { getAuth } from "firebase/auth";
-import { db } from "@/lib/firebase";
-import { collection, doc, onSnapshot } from "firebase/firestore";
+import { useEffect, useState, useCallback } from "react";
 import RegisterTrip from "@/components/trips/RegisterTrip";
-import useFetch from "@/hooks/useFetch";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Timestamp } from "firebase/firestore";
+import { useGetCollectionContext } from "@/context/getCollectionContext";
 
 const CrewMember = () => {
   const colorScheme = useColorScheme();
   const params = useLocalSearchParams();
+  const [refreshing, setRefreshing] = useState(false);
   const [ongoingTrips, setOngoingTrips] = useState<string[]>([]);
   const [futureTrips, setFutureTrips] = useState<string[]>([]);
   const [showModal, setShowModal] = useState(false);
 
-  const captainId = getAuth().currentUser?.uid;
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
 
-  const { loading: loadTrips, data: allTrips } = useFetch(
-    doc(db, "users", captainId!),
-    true
-  );
+  const { userLoading: loadTrips, currentUserData: allTrips } =
+    useGetCollectionContext();
 
   useEffect(() => {
-    allTrips?.trips?.forEach(async (trip: any) => {
-      await AsyncStorage.setItem(`${trip?.id}`, trip?.password);
+    allTrips?.trips?.sort((a: any, b: any) => {
+      const startDateA = new Timestamp(
+        a.start_date.seconds,
+        a.start_date.nanoseconds
+      ).toDate();
+      const startDateB = new Timestamp(
+        b.start_date.seconds,
+        b.start_date.nanoseconds
+      ).toDate();
+      return startDateA.getTime() - startDateB.getTime();
     });
+
     setOngoingTrips(
       allTrips?.trips
         ?.filter(
           (trip: any) =>
-            trip?.start_date?.toDate() <= new Date() &&
-            trip?.end_date?.toDate() >= new Date()
+            new Timestamp(
+              trip.start_date.seconds,
+              trip.start_date.nanoseconds
+            ).toDate() <= new Date() &&
+            new Timestamp(
+              trip.end_date.seconds,
+              trip.end_date.nanoseconds
+            ).toDate() >= new Date()
         )
         .map((trip: any) => trip.id)
     );
     setFutureTrips(
       allTrips?.trips
-        ?.filter((trip: any) => trip?.start_date?.toDate() > new Date())
+        ?.filter(
+          (trip: any) =>
+            new Timestamp(
+              trip.start_date.seconds,
+              trip.start_date.nanoseconds
+            ).toDate() > new Date()
+        )
         .map((trip: any) => trip.id)
     );
   }, [allTrips]);
 
   return (
     <SafeAreaView className="h-full">
-      <ScrollView>
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <Text className="dark:text-white text-center text-lg">
+          Pull to refresh
+        </Text>
         <View className="p-3">
-          <View className="border-b-8 dark:border-white">
-            <Text className="font-extrabold text-4xl py-4 dark:text-white ">
+          <View className="border-b-4 dark:border-white py-2">
+            {/* <View className="bg-blue-100 w-1/5 rounded-3xl"> */}
+            <Text className="font-extrabold text-3xl py-4 dark:text-white ">
               Ongoing:{" "}
             </Text>
+            {/* </View> */}
           </View>
           {loadTrips ? (
             <ActivityIndicator />
           ) : (
             <View className="flex-row flex-wrap">
-              {ongoingTrips?.map((tripId) => (
-                <TripCard tripId={tripId} key={tripId} isOngoing={true} />
-              ))}
+              {ongoingTrips?.length > 0 ? (
+                <>
+                  {ongoingTrips?.map((tripId) => (
+                    <TripCard tripId={tripId} key={tripId} isOngoing={true} />
+                  ))}
+                </>
+              ) : (
+                <Text className="dark:text-white text-left text-lg">
+                  No Ongoing Trips
+                </Text>
+              )}
             </View>
           )}
         </View>
         <View className="p-3">
-          <View className="border-b-8 dark:border-white">
-            <Text className="font-extrabold text-4xl py-4 dark:text-white ">
+          <View className="border-b-4 dark:border-white py-2">
+            {/* <View className="bg-blue-100 w-1/5 rounded-3xl"> */}
+            <Text className="font-extrabold text-3xl py-4 dark:text-white ">
               Future:{" "}
             </Text>
+            {/* </View> */}
           </View>
           {loadTrips ? (
             <ActivityIndicator />
           ) : (
             <View className="flex-row flex-wrap">
-              {futureTrips?.map((tripId) => (
-                <TripCard tripId={tripId} key={tripId} isOngoing={false} />
-              ))}
-              <Pressable className="m-8" onPress={() => setShowModal(true)}>
-                <View className="bg-transparent rounded-2xl flex-1 p-4 w-full">
-                  <View className="border-dashed border-4 dark:border-white p-20 rounded-2xl h-full">
-                    <View className="flex flex-col items-center justify-evenly h-full">
-                      <Text className="font-black text-7xl dark:text-white">
-                        +
-                      </Text>
-                      <Text className="font-black text-2xl dark:text-white">
-                        ADD
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              </Pressable>
+              {futureTrips?.length > 0 ? (
+                futureTrips.map((tripId) => (
+                  <TripCard tripId={tripId} key={tripId} isOngoing={false} />
+                ))
+              ) : (
+                <Text className="dark:text-white text-left text-lg">
+                  No Future Trips
+                </Text>
+              )}
             </View>
           )}
+        </View>
+        <View className="p-3 w-60 h-60">
+          <Pressable className="m-0" onPress={() => setShowModal(true)}>
+            <View className="bg-transparent flex-1 p-4 w-60">
+              <View className="border-dashed border-4 dark:border-white p-20 rounded-2xl h-full">
+                <View className="flex flex-col items-center justify-start h-full">
+                  <Text className="font-black text-5xl dark:text-white">+</Text>
+                  <Text className="font-black text-base dark:text-white">
+                    ADD
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </Pressable>
         </View>
       </ScrollView>
       <AddTripButton captainName={params.employee_id as string} />

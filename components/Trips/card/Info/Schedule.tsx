@@ -6,22 +6,19 @@ import {
   type JobFormSchema,
 } from "@/lib/validations/registerSchema";
 import { DocumentData, Timestamp } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
 import Item from "./calendar/Item";
 import { getTheme } from "./calendar/theme";
 import { TextInput } from "react-native-paper";
+import { useGetCollectionContext } from "@/context/getCollectionContext";
 
-interface JobTime {
-  hour?: Date;
-  duration?: string;
-  title?: string;
-  endTime?: Date;
-  startDate?: Date;
+interface JobId {
+  id: string;
+  password: string;
 }
 
 interface JobTimeInfo {
   title: string;
-  data: JobTime[];
+  data: JobId[] | [{}];
 }
 
 interface MarkedDates {
@@ -36,16 +33,16 @@ interface MarkedDates {
   dotColor?: string;
 }
 
-type Modify<T, R> = Omit<T, keyof R> & R;
+// type Modify<T, R> = Omit<T, keyof R> & R;
 
-interface JobEvent
-  extends Modify<
-    JobFormSchema,
-    {
-      startDate: Timestamp;
-      endDate: Timestamp;
-    }
-  > {}
+// interface JobEvent
+//   extends Modify<
+//     JobFormSchema,
+//     {
+//       startDate: Timestamp;
+//       endDate: Timestamp;
+//     }
+//   > {}
 
 interface ScheduleProps {
   trip: DocumentData;
@@ -53,13 +50,20 @@ interface ScheduleProps {
 }
 
 const Schedule = ({ trip, crewId }: ScheduleProps) => {
-  const auth = getAuth().currentUser;
+  const { currentAuth: auth } = useGetCollectionContext();
   const [jobEvent, setJobEvent] = useState<JobTimeInfo[]>([]);
   const [tripDates, setTripDates] = useState<Record<string, MarkedDates>>({});
   const [aboard, setAboard] = useState(false);
   const theme = useRef(getTheme());
+  const password =
+    auth?.uid === trip?.captain_id
+      ? trip?.captain_pass
+      : trip?.crew[trip?.crew.findIndex((crew: any) => crew.crew_id === crewId)]
+          ?.crew_pass;
 
   const renderItem = useCallback(({ item }: any) => {
+    console.log("item: ", item);
+
     return <Item item={item} />;
   }, []);
 
@@ -77,8 +81,19 @@ const Schedule = ({ trip, crewId }: ScheduleProps) => {
   useEffect(() => {
     const dates: Record<string, MarkedDates> = {};
     for (
-      let date = new Date(trip?.startDate.toDate());
-      date <= new Date(trip?.endDate.toDate());
+      let date = new Date(
+        new Timestamp(
+          trip?.start_date.seconds,
+          trip?.start_date.nanoseconds
+        ).toDate()
+      );
+      date <=
+      new Date(
+        new Timestamp(
+          trip?.end_date.seconds,
+          trip?.end_date.nanoseconds
+        ).toDate()
+      );
       date.setDate(date.getDate() + 1)
     ) {
       const dateString = date
@@ -91,15 +106,27 @@ const Schedule = ({ trip, crewId }: ScheduleProps) => {
 
       dates[dateString] = {
         startingDay:
-          formattedDate(date) === formattedDate(trip?.startDate.toDate())
+          formattedDate(date) ===
+          formattedDate(
+            new Timestamp(
+              trip?.start_date.seconds,
+              trip?.start_date.nanoseconds
+            ).toDate()
+          )
             ? true
             : false,
-        color: "red",
+        color: "yellow",
         endingDay:
-          formattedDate(date) === formattedDate(trip?.endDate.toDate())
+          formattedDate(date) ===
+          formattedDate(
+            new Timestamp(
+              trip?.end_date.seconds,
+              trip?.end_date.nanoseconds
+            ).toDate()
+          )
             ? true
             : false,
-        dotColor: "#50cebb",
+        dotColor: "#0099ff",
         marked: true,
       };
     }
@@ -116,15 +143,28 @@ const Schedule = ({ trip, crewId }: ScheduleProps) => {
 
   // get job items
   useEffect(() => {
-    const jobEvents: Record<string, JobTime[]> = {};
+    const jobEvents: Record<string, JobId[]> = {};
     const jobs =
       crewId === trip?.captain_id
         ? trip?.captain_job
-        : trip?.crew[trip?.crew.findIndex((crew: any) => crew.id === crewId)];
+        : trip?.crew[
+            trip?.crew.findIndex((crew: any) => crew.crew_id === crewId)
+          ]?.crew_jobs;
 
     for (
-      let date = new Date(trip?.startDate.toDate());
-      date <= new Date(trip?.endDate.toDate());
+      let date = new Date(
+        new Timestamp(
+          trip?.start_date.seconds,
+          trip?.start_date.nanoseconds
+        ).toDate()
+      );
+      date <=
+      new Date(
+        new Timestamp(
+          trip?.end_date.seconds,
+          trip?.end_date.nanoseconds
+        ).toDate()
+      );
       date.setDate(date.getDate() + 1)
     ) {
       const dateString = date
@@ -153,9 +193,9 @@ const Schedule = ({ trip, crewId }: ScheduleProps) => {
     };
 
     //TODO: ADD necessary item props
-    jobs?.map((job: JobEvent) => {
+    jobs?.map((job: { id: string; start_date: Timestamp }) => {
       jobEvents[
-        job?.startDate
+        new Timestamp(job?.start_date.seconds, job?.start_date.nanoseconds)
           .toDate()
           .toLocaleString("zh-TW", {
             year: "numeric",
@@ -164,18 +204,18 @@ const Schedule = ({ trip, crewId }: ScheduleProps) => {
           })
           .replaceAll("/", "-")
       ].push({
-        hour: job?.startDate.toDate(),
-        duration: getDiff(job?.startDate.toDate(), job?.endDate.toDate()),
-        title: job?.jobName,
-        endTime: job?.endDate.toDate(),
-        startDate: trip?.startDate.toDate(),
+        id: job?.id,
+        password: password,
       });
     });
 
     setJobEvent(
       Object.keys(jobEvents).map((dateString: string) => ({
         title: dateString,
-        data: jobEvents[dateString].length > 0 ? jobEvents[dateString] : [{}],
+        data:
+          jobEvents[dateString].length > 0
+            ? jobEvents[dateString]
+            : [{ password: password }],
       }))
     );
   }, []);
@@ -184,18 +224,40 @@ const Schedule = ({ trip, crewId }: ScheduleProps) => {
     // <View className="">
     <CalendarProvider
       date={
-        trip?.startDate.toDate() > new Date()
-          ? formattedDate(trip?.startDate.toDate())
-          : trip?.endDate.toDate() > new Date()
-          ? formattedDate(trip?.startDate.toDate())
+        new Timestamp(
+          trip?.start_date.seconds,
+          trip?.start_date.nanoseconds
+        ).toDate() > new Date()
+          ? formattedDate(
+              new Timestamp(
+                trip?.start_date.seconds,
+                trip?.start_date.nanoseconds
+              ).toDate()
+            )
+          : new Timestamp(
+              trip?.end_date.seconds,
+              trip?.end_date.nanoseconds
+            ).toDate() > new Date()
+          ? formattedDate(
+              new Timestamp(
+                trip?.start_date.seconds,
+                trip?.start_date.nanoseconds
+              ).toDate()
+            )
           : formattedDate(new Date())
       }
       // onDateChanged={onDateChanged}
       // onMonthChange={onMonthChange}
       showTodayButton={
-        trip?.startDate.toDate() > new Date()
+        new Timestamp(
+          trip?.start_date.seconds,
+          trip?.start_date.nanoseconds
+        ).toDate() > new Date()
           ? false
-          : trip?.endDate.toDate() > new Date()
+          : new Timestamp(
+              trip?.end_date.seconds,
+              trip?.end_date.nanoseconds
+            ).toDate() > new Date()
           ? true
           : false
       }
@@ -216,8 +278,14 @@ const Schedule = ({ trip, crewId }: ScheduleProps) => {
         <View className="flex items-center justify-center">
           <Pressable
             className={`bg-teal-500 rounded-3xl p-3 ${
-              trip?.startDate.toDate() >= new Date() ||
-              trip?.endDate.toDate() <= new Date()
+              new Timestamp(
+                trip?.start_date.seconds,
+                trip?.start_date.nanoseconds
+              ).toDate() >= new Date() ||
+              new Timestamp(
+                trip?.end_date.seconds,
+                trip?.end_date.nanoseconds
+              ).toDate() <= new Date()
                 ? "opacity-60"
                 : ""
             }`}

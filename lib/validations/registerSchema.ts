@@ -4,7 +4,6 @@ export const JobSchema = z.object({
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
   jobName: z.string(),
-  jobDescription: z.string().optional(),
 });
 
 export const RegisterSchema = z.object({
