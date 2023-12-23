@@ -53,7 +53,7 @@ export const CheckConnectionProvider = ({
         "isConnected: ",
         isConnected
       );
-      // setIsConnected(state.isConnected!);
+      setIsConnected(state.isConnected!);
       setConnectionType(state.type!);
     });
     return () => unsubscribe();

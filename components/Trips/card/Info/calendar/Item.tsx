@@ -39,6 +39,7 @@ const AgendaItem = ({ item }: ItemProps) => {
   }
   //TODO if past end time should not be able to check in
   //TODO change format (eg.color, text) between different job status
+  // TODO job status needs to sync firebase
   useEffect(() => {
     const timeId = setInterval(() => {
       setIsLate(
