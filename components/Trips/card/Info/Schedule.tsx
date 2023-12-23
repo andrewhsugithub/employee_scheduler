@@ -295,6 +295,25 @@ const Schedule = ({ trip, crewId }: ScheduleProps) => {
               {aboard ? "Offboard" : "Aboard"}
             </Text>
           </Pressable>
+          <View>
+            {/* {showDialog && (
+              <InputPasswordPaper
+                passwordValid={passwordValid}
+                showDialog={showDialog}
+                setShowDialog={setShowDialog}
+                correctPassword={item.password}
+                setPasswordValid={setPasswordValid}
+                setPassword={setPassword}
+                passwordVisible={passwordVisible}
+                setPasswordVisible={setPasswordVisible}
+                password={password}
+                isLate={isLate}
+                checkIn={checkIn}
+                setCheckIn={setCheckIn}
+                itemId={item.id}
+              />
+            )} */}
+          </View>
         </View>
       </View>
       <AgendaList

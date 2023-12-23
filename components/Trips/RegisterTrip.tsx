@@ -36,7 +36,6 @@ import PickDate from "../PickDate";
 import AddCrewPage from "./AddCrewPage";
 import AddJobPage from "./AddJobPage";
 import JobForm from "../JobForm";
-import {} from "firebase/firestore";
 import RegisterTripInfo from "./RegisterTripInfo";
 import useFetch from "@/hooks/useFetch";
 import { Button, Dialog, Portal, PaperProvider } from "react-native-paper";
@@ -80,7 +79,6 @@ const RegisterTrip = ({ show, handleShow }: RegisterTripProps) => {
     jobRef: CollectionReference,
     jobData: JobFormSchema
   ) => {
-    console.log("jobData: ", jobData);
     const job = {
       expected_starting_datetime: jobData.startDate,
       expected_ending_datetime: jobData.endDate,
@@ -96,14 +94,7 @@ const RegisterTrip = ({ show, handleShow }: RegisterTripProps) => {
     try {
       const addedJob = await addDoc(jobRef, job);
       //* put jobs into local storage
-      const jobsCollection = await AsyncStorage.getItem("jobs");
-      await AsyncStorage.setItem(
-        "jobs",
-        JSON.stringify({
-          ...JSON.parse(jobsCollection!),
-          [addedJob.id]: job,
-        })
-      );
+      await AsyncStorage.setItem("jobs_" + addedJob.id, JSON.stringify(job));
 
       return { id: addedJob.id, start_date: jobData.startDate };
     } catch (err: any) {
@@ -162,14 +153,7 @@ const RegisterTrip = ({ show, handleShow }: RegisterTripProps) => {
       const tripsRef = collection(db, "trips");
       const addedTrip = await addDoc(tripsRef, trip);
       //* put into trip local storage
-      const tripCollection = await AsyncStorage.getItem("trips");
-      await AsyncStorage.setItem(
-        "trips",
-        JSON.stringify({
-          ...JSON.parse(tripCollection!),
-          [addedTrip.id]: trip,
-        })
-      );
+      await AsyncStorage.setItem("trips_" + addedTrip.id, JSON.stringify(trip));
 
       const userRef = doc(db, "users", captainId!);
       await updateDoc(userRef, {

@@ -29,7 +29,7 @@ const Input = <T extends FieldValues>({
   const errorMessage = errors?.[name]?.message;
 
   return (
-    <View className={`h-14 ${classname}`}>
+    <View className={`h-14 ${classname} mb-3`}>
       <Controller
         control={control}
         name={name as any}

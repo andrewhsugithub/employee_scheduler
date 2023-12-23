@@ -1,6 +1,12 @@
 ﻿import { createContext, useContext, useEffect, useState } from "react";
 import NetInfo from "@react-native-community/netinfo";
-import { DocumentData, collection, doc, onSnapshot } from "firebase/firestore";
+import {
+  DocumentData,
+  QuerySnapshot,
+  collection,
+  doc,
+  onSnapshot,
+} from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useCheckConnectionContext } from "./checkConnectionContext";
@@ -61,25 +67,27 @@ export const GetCollectionProvider = ({
   const [tripIdList, setTripIdList] = useState<Record<string, any>>([]);
   const [currentUserData, setCurrentUserData] = useState<DocumentData>({});
 
-  const updateLocalUsers = async (
-    snapshot: DocumentData,
-    idList: Record<string, any>
-  ) => {
+  const updateLocalUsers = async (snapshot: DocumentData) => {
     let allUsers: User[] = [];
     snapshot?.forEach((user: any) => {
       allUsers.push({ id: user.id, name: user.data().name });
     });
-    console.log("allUsers: ", allUsers);
+    // console.log("allUsers: ", allUsers);
     await AsyncStorage.setItem("allUsers", JSON.stringify(allUsers));
-    await AsyncStorage.setItem("trips", JSON.stringify(idList));
-
-    // const trip = await AsyncStorage.getItem("trips");
-    // const tripObj = JSON.parse(trip!);
-    // console.log("idList: ", idList, "allUsers: ", allUsers, "trip: ", tripObj);
+    setUserLoading(false);
   };
 
   const updateCurrentLocalUser = async (userData: DocumentData) => {
     await AsyncStorage.setItem(auth?.uid!, JSON.stringify(userData));
+    if (Object.keys(userData.trips).length === 0) return;
+    let tripList: Record<string, any> = {};
+    Promise.all(
+      userData.trips?.map(async (trip: any) => {
+        await AsyncStorage.setItem("trips_" + trip.id, JSON.stringify({}));
+        tripList[trip.id] = {};
+      })
+    );
+    setTripIdList(tripList);
   };
 
   // users collection
@@ -91,49 +99,35 @@ export const GetCollectionProvider = ({
       { includeMetadataChanges: true },
       (usersSnapshot) => {
         const userList: User[] = [];
-        let tripList: Record<string, any> = {};
+
         usersSnapshot?.forEach((user: any) => {
-          userList.push({ id: user.id, name: user.data().name });
+          userList.push({ id: user.id, name: user.data()?.name });
           if (user.id === auth?.uid) {
-            user.data().trips.map((trip: any) => (tripList[trip.id] = {}));
             setCurrentUserData(user.data());
             updateCurrentLocalUser(user.data());
           }
         });
         setUserList(userList);
-        setTripIdList(tripList);
-        updateLocalUsers(usersSnapshot, tripList).then(() =>
-          setUserLoading(false)
-        );
+        updateLocalUsers(usersSnapshot);
       }
     );
 
     return () => unsubscribe();
   }, []);
 
-  // get local user collection
-  useEffect(() => {
-    const getUsers = async () => {
-      const allUsers = await AsyncStorage.getItem("allUsers");
-      setUserList(JSON.parse(allUsers!));
-      console.log("users:", JSON.parse(allUsers!));
-      const tripIds = await AsyncStorage.getItem("trips");
-      setTripIdList(JSON.parse(tripIds!));
-      console.log("tripid:", JSON.parse(tripIds!));
-      const localUser = await AsyncStorage.getItem("currentUser");
-      const userId = JSON.parse(localUser!).uid;
-      const userData = await AsyncStorage.getItem(userId!);
-      setCurrentUserData(JSON.parse(userData!));
-      setUserLoading(false);
-    };
-    if (isConnected) return;
-    console.log("not supposed to be here if have wifi");
-    getUsers();
-  }, []);
-
   // TODO: hopefully there is a better way than to get all job ids
-  const updateLocalJobs = async (jobIdList: Record<string, any> = {}) =>
-    await AsyncStorage.setItem("jobs", JSON.stringify(jobIdList));
+  const updateLocalJobs = async (
+    jobsSnapshot: QuerySnapshot<DocumentData, DocumentData>
+  ) => {
+    const jobIds: string[] = [];
+    jobsSnapshot?.forEach((job: any) => jobIds.push(job.id));
+    Promise.all(
+      jobIds.map(
+        async (jobId) =>
+          await AsyncStorage.setItem("jobs_" + jobId, JSON.stringify({}))
+      )
+    );
+  };
 
   useEffect(() => {
     if (!isConnected) return;
@@ -142,14 +136,36 @@ export const GetCollectionProvider = ({
       ref,
       { includeMetadataChanges: true },
       (jobsSnapshot) => {
-        // console.log("change");
-        let jobIdList: Record<string, any> = {};
-        jobsSnapshot?.forEach((job: any) => (jobIdList[job.id] = {}));
-        updateLocalJobs(jobIdList);
+        console.log("jobsSnapshot:", jobsSnapshot);
+        updateLocalJobs(jobsSnapshot);
       }
     );
-
     return () => unsubscribe();
+  }, []);
+
+  //! no wifi => get local user collection
+  useEffect(() => {
+    const getUsers = async () => {
+      const allUsers = await AsyncStorage.getItem("allUsers");
+      setUserList(JSON.parse(allUsers!));
+      // console.log("users:", JSON.parse(allUsers!));
+      const localUser = await AsyncStorage.getItem("currentUser");
+      const userId = JSON.parse(localUser!).uid;
+      const userData = await AsyncStorage.getItem(userId!);
+      setCurrentUserData(JSON.parse(userData!));
+
+      let tripList: Record<string, any> = {};
+      if (Object.keys(JSON.parse(userData!).trips).length !== 0) {
+        JSON.parse(userData!).trips?.map(async (trip: any) => {
+          tripList[trip.id] = {};
+        });
+      }
+      setTripIdList(tripList);
+      setUserLoading(false);
+    };
+    if (isConnected) return;
+    console.log("not supposed to be here if have wifi");
+    getUsers();
   }, []);
 
   return (

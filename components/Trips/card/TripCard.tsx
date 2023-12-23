@@ -77,9 +77,8 @@ const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
     "trips",
     tripId!
   );
-
   useEffect(() => {
-    if (loadTrip) return;
+    if (loadTrip || Object.keys(tripData!).length === 0) return;
 
     console.log("tripData:", tripData, tripId!);
 
@@ -119,6 +118,8 @@ const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
   useEffect(() => {
     setExpanded(false);
   }, [showTripInfo, showRollCall, showDetails, showEdit]);
+
+  if (!loadTrip && Object.keys(tripData!).length === 0) return; //! here add a dialog say that need wifi connection
 
   return (
     <>

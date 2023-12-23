@@ -9,16 +9,9 @@ import {
   doc,
   updateDoc,
 } from "firebase/firestore";
-import React, { useCallback, useEffect, useState } from "react";
-import {
-  Alert,
-  View,
-  Text,
-  Button,
-  Pressable,
-  ActivityIndicator,
-} from "react-native";
-import { Dialog, Portal, PaperProvider, TextInput } from "react-native-paper";
+import React, { useEffect, useState } from "react";
+import { Alert, View, Text, Pressable, ActivityIndicator } from "react-native";
+import InputPasswordPaper from "../Dialog";
 
 interface ItemProps {
   item: {
@@ -28,13 +21,12 @@ interface ItemProps {
 }
 
 const AgendaItem = ({ item }: ItemProps) => {
+  const [passwordValid, setPasswordValid] = useState(false);
   const [checkIn, setCheckIn] = useState(false);
   const [checkOut, setCheckOut] = useState(false);
   const [isLate, setIsLate] = useState(false);
   const [isOvertime, setIsOvertime] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
-  const [passwordValid, setPasswordValid] = useState(false);
-  const [passwordVisible, setPasswordVisible] = useState(true);
 
   if (Object.keys(item).length === 1) {
     return (
@@ -45,7 +37,8 @@ const AgendaItem = ({ item }: ItemProps) => {
       </View>
     );
   }
-
+  //TODO if past end time should not be able to check in
+  //TODO change format (eg.color, text) between different job status
   useEffect(() => {
     const timeId = setInterval(() => {
       setIsLate(
@@ -73,54 +66,6 @@ const AgendaItem = ({ item }: ItemProps) => {
     item?.id!
   );
 
-  const InputPasswordPaper = () => {
-    const [visible, setVisible] = React.useState(false);
-    const [password, setPassword] = React.useState("123456");
-    const [passwordVisible, setPasswordVisible] = useState(true);
-    const showDialog = () => setVisible(true);
-    const hideDialog = () => setVisible(false);
-
-    const passwordCheck = () => {
-      if (password === item.password) {
-        setPasswordValid(true);
-        hideDialog();
-      } else {
-        alert("Your password is wrong!");
-      }
-    }; // }
-    return (
-      <PaperProvider>
-        <View>
-          <Portal>
-            <Dialog visible={visible} onDismiss={hideDialog}>
-              <Dialog.Title>Input Password</Dialog.Title>
-              <Dialog.Content>
-                <Text>Enter Password</Text>
-                <View>
-                  <TextInput
-                    className="flex"
-                    placeholder="e.g. 123456"
-                    onChangeText={(inputText) => setPassword(inputText)}
-                    caretHidden={passwordVisible}
-                  />
-                  <TextInput.Icon
-                    onPress={() => {
-                      setPasswordVisible(!passwordVisible);
-                    }}
-                    icon={`${passwordVisible ? "eye-off" : "eye"}`}
-                  />
-                </View>
-                <Pressable className="" onPress={() => passwordCheck()}>
-                  <Text>Verify</Text>
-                </Pressable>
-              </Dialog.Content>
-            </Dialog>
-          </Portal>
-        </View>
-      </PaperProvider>
-    );
-  };
-
   if (loading) return <ActivityIndicator />;
 
   console.log("data: ", data);
@@ -133,16 +78,29 @@ const AgendaItem = ({ item }: ItemProps) => {
     try {
       //! update job
       await updateDoc(docRef, updatedFields);
-      const jobCollection = await AsyncStorage.getItem("jobs");
+      const jobCollection = await AsyncStorage.getItem("jobs_" + item.id!);
       let collectionObj = JSON.parse(jobCollection!);
-      collectionObj[item?.id!] = {
-        ...collectionObj[item?.id!],
+      collectionObj = {
+        ...collectionObj,
         ...updatedFields,
       };
-      await AsyncStorage.setItem("jobs", JSON.stringify(collectionObj));
+      await AsyncStorage.setItem(
+        "jobs_" + item.id!,
+        JSON.stringify(collectionObj)
+      );
     } catch (err: any) {
       console.log(err.message);
     }
+  };
+
+  const handleCorrectPassword = (
+    docRef: DocumentReference,
+    setFunc: () => void,
+    updatedFields: any
+  ) => {
+    setFunc();
+    updateJob(docRef, updatedFields);
+    alert("Your password is correct!");
   };
 
   const buttonPressed = () => {
@@ -155,39 +113,24 @@ const AgendaItem = ({ item }: ItemProps) => {
     ) {
       alert("Not the time yet");
     } else if (!checkIn) {
-      //彈出視窗輸入密碼
-      InputPasswordPaper();
-      if (passwordValid) {
-        setCheckIn(!checkIn);
-        updateJob(docRef, {
+      setShowDialog(true);
+      const setFunc = () => setCheckIn(!checkIn);
+      if (passwordValid)
+        handleCorrectPassword(docRef, setFunc, {
           is_present: true,
           is_late: isLate,
         });
-      }
     } else if (checkIn && !checkOut) {
-      setCheckOut(!checkOut);
-      updateJob(docRef, {
-        has_complete_job: true,
-        has_worked_overtime: isOvertime,
-      });
+      setShowDialog(true);
+      const setFunc = () => setCheckOut(!checkOut);
+      if (passwordValid)
+        handleCorrectPassword(docRef, setFunc, {
+          has_complete_job: true,
+          has_worked_overtime: isOvertime,
+        });
     } else if (checkOut) {
       alert("You have already checked out");
     }
-    // if (data?.expected_starting_datetime.toDate() > new Date()) {
-    //   setCheckIn(!checkIn);
-    //   updateJob(docRef, {
-    //     is_present: true,
-    //     is_late: isLate,
-    //   });
-    // } else if (checkIn) {
-    //   setCheckOut(!checkOut);
-    //   updateJob(docRef, {
-    //     has_complete_job: true,
-    //     has_worked_overtime: isOvertime,
-    //   });
-    // } else {
-    //   alert("Not the time yet");
-    // }
   };
 
   const itemPressed = () => {
@@ -206,77 +149,87 @@ const AgendaItem = ({ item }: ItemProps) => {
   };
 
   return (
-    <Pressable
-      onPress={itemPressed}
-      className="p-5 bg-white border-b-2 border-b-slate-400 flex flex-row"
-    >
-      <View>
-        <Text className="text-black font-bold text-sm text-left">
-          {data?.job_name}
-        </Text>
-        <Text
-          className={`${
-            !checkIfLate(
-              new Timestamp(
-                data?.expected_starting_datetime.seconds,
-                data?.expected_starting_datetime.nanoseconds
-              ).toDate()
-            )
-              ? "text-black"
-              : "text-red-500"
-          } font-bold text-sm text-left`}
-        >
-          {`${
-            !checkIfLate(
-              new Timestamp(
-                data?.expected_starting_datetime.seconds,
-                data?.expected_starting_datetime.nanoseconds
-              ).toDate()
-            )
-              ? "not late"
-              : "late"
-          }`}
-        </Text>
-        <Text className="text-xs text-black text-left">
-          {getFormattedHour(
-            new Timestamp(
-              data?.expected_starting_datetime.seconds,
-              data?.expected_starting_datetime.nanoseconds
-            ).toDate()
-          )}{" "}
-          ~{" "}
-          {getFormattedHour(
-            new Timestamp(
-              data?.expected_ending_datetime.seconds,
-              data?.expected_ending_datetime.nanoseconds
-            ).toDate()
-          )}
-        </Text>
-      </View>
-
-      <View className="flex-1 justify-end">
-        <Pressable onPress={() => buttonPressed()}>
+    <View>
+      <Pressable
+        onPress={itemPressed}
+        className="p-5 bg-white border-b-2 border-b-slate-400 flex flex-row"
+      >
+        <View>
+          <Text className="text-black font-bold text-sm text-left">
+            {data?.job_name}
+          </Text>
           <Text
             className={`${
-              new Date() >
+              !checkIfLate(
                 new Timestamp(
                   data?.expected_starting_datetime.seconds,
                   data?.expected_starting_datetime.nanoseconds
-                ).toDate() &&
-              new Date() <=
-                new Timestamp(
-                  data?.expected_ending_datetime.seconds,
-                  data?.expected_ending_datetime.nanoseconds
                 ).toDate()
-                ? "text-slate-400"
-                : "text-black"
-            } text-right`}
+              )
+                ? "text-black"
+                : "text-red-500"
+            } font-bold text-sm text-left`}
           >
-            {checkOut ? "已完成" : checkIn ? "FINISH JOB" : "簽到"}
+            {`${
+              !checkIfLate(
+                new Timestamp(
+                  data?.expected_starting_datetime.seconds,
+                  data?.expected_starting_datetime.nanoseconds
+                ).toDate()
+              )
+                ? "not late"
+                : "late"
+            }`}
           </Text>
-        </Pressable>
+          <Text className="text-xs text-black text-left">
+            {getFormattedHour(
+              new Timestamp(
+                data?.expected_starting_datetime.seconds,
+                data?.expected_starting_datetime.nanoseconds
+              ).toDate()
+            )}{" "}
+            ~{" "}
+            {getFormattedHour(
+              new Timestamp(
+                data?.expected_ending_datetime.seconds,
+                data?.expected_ending_datetime.nanoseconds
+              ).toDate()
+            )}
+          </Text>
+        </View>
+
+        <View className="flex-1 justify-end">
+          <Pressable onPress={() => buttonPressed()}>
+            <Text
+              className={`${
+                new Date() >
+                  new Timestamp(
+                    data?.expected_starting_datetime.seconds,
+                    data?.expected_starting_datetime.nanoseconds
+                  ).toDate() &&
+                new Date() <=
+                  new Timestamp(
+                    data?.expected_ending_datetime.seconds,
+                    data?.expected_ending_datetime.nanoseconds
+                  ).toDate()
+                  ? "text-slate-400"
+                  : "text-black"
+              } text-right`}
+            >
+              {checkOut ? "已完成" : checkIn ? "FINISH JOB" : "簽到"}
+            </Text>
+          </Pressable>
+        </View>
+      </Pressable>
+      <View>
+        <InputPasswordPaper
+          showDialog={showDialog}
+          setShowDialog={setShowDialog}
+          correctPassword={item.password!}
+          setPasswordValid={setPasswordValid}
+        />
       </View>
-    </Pressable>
+    </View>
   );
 };
 

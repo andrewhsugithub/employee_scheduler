@@ -1,7 +1,14 @@
-import { FlatList, Text, View, Modal, Pressable } from "react-native";
+import {
+  FlatList,
+  Text,
+  View,
+  Modal,
+  Pressable,
+  ScrollView,
+} from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import React, { useEffect, useState } from "react";
-import { DocumentData, doc, getDoc } from "firebase/firestore";
+import { DocumentData, Timestamp, doc, getDoc } from "firebase/firestore";
 import { set } from "zod";
 import { db } from "@/lib/firebase";
 import useFetch from "@/hooks/useFetch";
@@ -65,25 +72,25 @@ function calculatePortion(timeString: string): number {
 type employee = Record<string, jobs[]>; //key是員工名
 
 const Table = ({ show, handleShow, trips }: TableProps) => {
-  const [employeeJobs, setEmployeeJobs] = useState({});
+  const [Employee, setEmployeeJobs] = useState<employee>({});
 
-  const Employee: employee = {
-    Josh: [
-      { jobtype: "捕魚", time: "4:00~6:00" },
-      { jobtype: "殺魚", time: "7:00~8:00" },
-      { jobtype: "處鯉魚獲", time: "13:00~14:00" },
-    ],
-    Andrew: [
-      { jobtype: "捕魚", time: "2:00~3:00" },
-      { jobtype: "殺魚", time: "9:00~10:00" },
-      { jobtype: "處鯉魚獲", time: "16:00~18:00" },
-    ],
-    Roger: [
-      { jobtype: "捕魚", time: "5:00~6:00" },
-      { jobtype: "殺魚", time: "9:00~11:00" },
-      { jobtype: "處鯉魚獲", time: "20:00~23:00" },
-    ],
-  };
+  //const Employee: employee = {
+  //  Josh: [
+  //    { jobtype: "捕魚", time: "4:00~6:00" },
+  //    { jobtype: "殺魚", time: "7:00~8:00" },
+  //    { jobtype: "處鯉魚獲", time: "13:00~14:00" },
+  //  ],
+  //  Andrew: [
+  //    { jobtype: "捕魚", time: "2:00~3:00" },
+  //    { jobtype: "殺魚", time: "9:00~10:00" },
+  //    { jobtype: "處鯉魚獲", time: "16:00~18:00" },
+  //  ],
+  //  Roger: [
+  //    { jobtype: "捕魚", time: "5:00~6:00" },
+  //    { jobtype: "殺魚", time: "9:00~11:00" },
+  //   { jobtype: "處鯉魚獲", time: "20:00~23:00" },
+  //  ],
+  //};
 
   const allJobsArray = Object.keys(Employee)
     .map((person) => {
@@ -129,17 +136,50 @@ const Table = ({ show, handleShow, trips }: TableProps) => {
     //    });
     //    }));
     //  });
+    const jobInfo: Record<string, jobs[]> = {};
     const fetchData = async () => {
-      const jobInfo: Record<string, jobs[]> = {};
-
       const jobIds: Record<string, string[]> = {}; // key: crewid, value: jobsids
 
       await Promise.all(
         trips?.crew?.map(async (crewMember: any) => {
+          //get captain job
+          jobIds[trips?.captain_name.id] = trips?.captain_jobs.map(
+            (job: any) => job.id
+          );
+          //get crew jobs
           jobIds[crewMember.id] = crewMember.crew_jobs.map(
             (job: any) => job.id
           );
+          //build captain job
+          const jobDataPromisesForCaptain = jobIds[trips?.captain_name.id]?.map(
+            async (jobId: string) => {
+              const jobRef = doc(db, "jobs", jobId);
+              const jobData = await getDoc(jobRef);
+              return {
+                jobtype: jobData.data()?.job_name,
+                time:
+                  getFormattedHour(
+                    new Timestamp(
+                      jobData.data()?.expected_starting_datetime.seconds,
+                      jobData.data()?.expected_starting_datetime.nanoseconds
+                    ).toDate()
+                  ) +
+                  "~" +
+                  getFormattedHour(
+                    new Timestamp(
+                      jobData.data()?.expected_starting_datetime.seconds,
+                      jobData.data()?.expected_starting_datetime.nanoseconds
+                    ).toDate()
+                  ),
+              };
+            }
+          );
+          const jobDataResultsForCaptain = await Promise.all(
+            jobDataPromisesForCaptain
+          );
+          jobInfo[crewMember.crew_name] = jobDataResultsForCaptain;
 
+          //build crew job
           const jobDataPromises = jobIds[crewMember.id]?.map(
             async (jobId: string) => {
               const jobRef = doc(db, "jobs", jobId);
@@ -148,9 +188,19 @@ const Table = ({ show, handleShow, trips }: TableProps) => {
               return {
                 jobtype: jobData.data()?.job_name,
                 time:
-                  getFormattedHour(jobData.data()?.expected_starting_datetime) +
+                  getFormattedHour(
+                    new Timestamp(
+                      jobData.data()?.expected_starting_datetime.seconds,
+                      jobData.data()?.expected_starting_datetime.nanoseconds
+                    ).toDate()
+                  ) +
                   "~" +
-                  getFormattedHour(jobData.data()?.expected_ending_datetime),
+                  getFormattedHour(
+                    new Timestamp(
+                      jobData.data()?.expected_ending_datetime.seconds,
+                      jobData.data()?.expected_ending_datetime.nanoseconds
+                    ).toDate()
+                  ),
               };
             }
           );
@@ -158,7 +208,7 @@ const Table = ({ show, handleShow, trips }: TableProps) => {
           jobInfo[crewMember.crew_name] = jobDataResults;
         }) || []
       );
-      console.log("jobInfo:", jobInfo);
+      console.log("jobInfo: ", jobInfo);
       setEmployeeJobs(jobInfo);
     };
     fetchData();
@@ -172,15 +222,24 @@ const Table = ({ show, handleShow, trips }: TableProps) => {
         <View
           className={`p-3 rounded-2xl bg-slate-200 w-10/12 h-5/6 justify-center items-center`}
         >
+          <Pressable
+            onPress={() => handleShow(false)}
+            className="absolute top-4 right-4"
+          >
+            <MaterialIcons name="close" color="#fff" size={22} />
+          </Pressable>
+
           <View className="justify-center items-center">
             <Text className="text-xl">Job Scheduler</Text>
           </View>
 
           <View className="flex-1 items-center justify-center w-4/5 h-4/5">
             <View className="bg-white">
-              <View className="flex flex-row bg-blue-300 border-2 justify-self-start">
-                <Text className="w-24 text-center">Name</Text>
-                <View className="bg-slate-100 border-l-2">
+              <View className="flex flex-row border-2 justify-self-start bg-slate-100">
+                <View className="bg-blue-300">
+                  <Text className="w-24 text-center">Name</Text>
+                </View>
+                <View className="bg-slate-100 border-l-2 flex">
                   <Text className="text-center">Sunday,April 26, 2020</Text>
                   <View className="flex flex-row br-2 p-2 space-x-2 border-t-2 border-l-2">
                     {dataArray.map((number, index) => (
@@ -193,23 +252,30 @@ const Table = ({ show, handleShow, trips }: TableProps) => {
               </View>
               <View className="flex flex-row">
                 <View className="flex bg-white">
-                  {Object.keys(Employee).map((person) => (
+                  {/*{Object.keys(Employee).map((person) => (
                     <View
                       key={person}
                       className="flex flex-row bg-white border justify-self-start"
                     >
+                      <Text>hi</Text>
                       <Text className=" w-24 h-7 text-center">{`${person}`}</Text>
                     </View>
-                  ))}
+                  ))}*/}
                 </View>
-                <View className="flex">
+                <ScrollView className="flex">
                   {Object.keys(Employee).map((person) => {
                     intervals = generateIntervals(Employee[person]);
 
                     return (
                       <View key={person} className="flex flex-row w-5/5 border">
+                        <Text>hi</Text>
                         {/* <Text>{`${person}的工作:`}</Text> */}
-
+                        <View
+                          key={person}
+                          className="flex flex-row bg-white border-r justify-self-start"
+                        >
+                          <Text className=" w-24 h-7 text-center">{`${person}`}</Text>
+                        </View>
                         {intervals.map((time: string, index) => {
                           const portion: number = calculatePortion(time);
                           {
@@ -234,7 +300,7 @@ const Table = ({ show, handleShow, trips }: TableProps) => {
                             return (
                               <View
                                 key={index}
-                                className={`justify-self-start h-7 border-r bg-red-500`}
+                                className={`justify-self-start h-7 border-r bg-red-500 `}
                                 style={{ minWidth: realValue }}
                                 // style={{ minWidth: `${portion}%` }}
                               >
@@ -258,18 +324,11 @@ const Table = ({ show, handleShow, trips }: TableProps) => {
                       </View>
                     );
                   })}
-                </View>
+                </ScrollView>
               </View>
             </View>
           </View>
         </View>
-
-        <Pressable
-          onPress={() => handleShow(false)}
-          className="absolute top-4 right-4"
-        >
-          <MaterialIcons name="close" color="#fff" size={22} />
-        </Pressable>
       </View>
     </Modal>
   );

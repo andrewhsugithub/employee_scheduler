@@ -26,7 +26,6 @@ export const CheckConnectionProvider = ({
 }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [connectionType, setConnectionType] = useState("");
-  console.log("connectionType: ", connectionType, "isConnected: ", isConnected);
 
   const hello = async () => {
     const user = await AsyncStorage.getItem("allUsers");
@@ -45,10 +44,16 @@ export const CheckConnectionProvider = ({
   useEffect(() => {
     // TODO make into a react context provider
     const unsubscribe = NetInfo.addEventListener((state) => {
-      console.log("Connection type", state.type);
-      console.log("Is connected?", state.isConnected);
-      hello();
-      setIsConnected(state.isConnected!);
+      // console.log("Connection type", state.type);
+      // console.log("Is connected?", state.isConnected);
+      // hello();
+      console.log(
+        "connectionType: ",
+        connectionType,
+        "isConnected: ",
+        isConnected
+      );
+      // setIsConnected(state.isConnected!);
       setConnectionType(state.type!);
     });
     return () => unsubscribe();

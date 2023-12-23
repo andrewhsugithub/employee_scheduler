@@ -95,9 +95,9 @@ const Auth = () => {
   const [passwordVisibleDouble, setPasswordVisibleDouble] = useState(true);
   return (
     <SafeAreaView className="h-screen">
-      <View className="h-full p-40 flex flex-col justify-around ">
+      <View className="h-full p-40 flex flex-col justify-around">
         <KeyboardAvoidingView behavior={"padding"} className="flex-1">
-          <Text className="text-2xl text-black dark:text-white font-extrabold text-center">
+          <Text className="text-3xl text-black dark:text-white font-bold text-center pb-3">
             Sign Up Form
           </Text>
           <Input
@@ -210,7 +210,7 @@ const Auth = () => {
                   className="text-gray-400 dark:text-white"
                 />
               ) : (
-                <Text>Sign Up</Text>
+                <Text className="text-2xl font-semibold">Sign Up</Text>
               )}
             </Pressable>
             <Text className="text-right dark:text-white">

@@ -114,42 +114,46 @@ const SignIn = () => {
   return (
     <SafeAreaView className="h-screen">
       <View className="h-full p-40 flex flex-col justify-around">
-        {/* <KeyboardAvoidingView behavior="padding"> */}
-        <Text className="text-2xl text-black dark:text-white font-extrabold text-center">
-          Sign In Form
-        </Text>
-        <Input
-          control={control}
-          errors={errors}
-          name="email"
-          label={"📫Email"}
-        />
-        <Input
-          control={control}
-          errors={errors}
-          name="password"
-          label={"🔒Password"}
-          isPassword={!passwordVisible}
-          right={
-            passwordVisible ? (
-              <TextInput.Icon
-                onPress={() => {
-                  console.log("Eye-off pressed");
-                  setPasswordVisible(!passwordVisible);
-                }}
-                icon="eye-off"
-              />
-            ) : (
-              <TextInput.Icon
-                onPress={() => {
-                  console.log("Eye-on pressed");
-                  setPasswordVisible(!passwordVisible);
-                }}
-                icon="eye"
-              />
-            )
-          }
-        />
+        <KeyboardAvoidingView
+          behavior="padding"
+          className="h-4/5 justify-around mb-10"
+        >
+          <Text className="text-3xl text-black dark:text-white font-bold text-center">
+            Sign In Form
+          </Text>
+          <Input
+            control={control}
+            errors={errors}
+            name="email"
+            label={"📫Email"}
+          />
+          <Input
+            control={control}
+            errors={errors}
+            name="password"
+            label={"🔒Password"}
+            isPassword={!passwordVisible}
+            right={
+              passwordVisible ? (
+                <TextInput.Icon
+                  onPress={() => {
+                    console.log("Eye-off pressed");
+                    setPasswordVisible(!passwordVisible);
+                  }}
+                  icon="eye-off"
+                />
+              ) : (
+                <TextInput.Icon
+                  onPress={() => {
+                    console.log("Eye-on pressed");
+                    setPasswordVisible(!passwordVisible);
+                  }}
+                  icon="eye"
+                />
+              )
+            }
+          />
+        </KeyboardAvoidingView>
         <View>
           <Pressable
             className="bg-green-500 p-4 rounded-full items-center mb-3"
@@ -158,7 +162,7 @@ const SignIn = () => {
             {isSubmitting ? (
               <ActivityIndicator size="small" className="text-gray-400" />
             ) : (
-              <Text>Sign In</Text>
+              <Text className="text-2xl font-semibold">Sign In</Text>
             )}
           </Pressable>
           <Text className="text-right dark:text-white">
@@ -168,7 +172,6 @@ const SignIn = () => {
             </Link>
           </Text>
         </View>
-        {/* </KeyboardAvoidingView> */}
       </View>
     </SafeAreaView>
   );

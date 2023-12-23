@@ -139,7 +139,7 @@ const CrewMember = () => {
         <View className="p-3 w-60 h-60">
           <Pressable className="m-0" onPress={() => setShowModal(true)}>
             <View className="bg-transparent flex-1 p-4 w-60">
-              <View className="border-dashed border-4 dark:border-white p-20 rounded-2xl h-full">
+              <View className="border-dashed border-4 dark:border-white p-20 rounded-2xl h-56 w-56">
                 <View className="flex flex-col items-center justify-start h-full">
                   <Text className="font-black text-5xl dark:text-white">+</Text>
                   <Text className="font-black text-base dark:text-white">
