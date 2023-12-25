@@ -208,10 +208,13 @@ const Table = ({ show, handleShow, trips }: TableProps) => {
           jobInfo[crewMember.crew_name] = jobDataResults;
         }) || []
       );
-      console.log("jobInfo: ", jobInfo);
+
+      //console.log("jobInfo: ", jobInfo);
       setEmployeeJobs(jobInfo);
     };
     fetchData();
+
+    console.log("jobInfo: ", Employee);
   }, []);
 
   return (
@@ -226,7 +229,7 @@ const Table = ({ show, handleShow, trips }: TableProps) => {
             onPress={() => handleShow(false)}
             className="absolute top-4 right-4"
           >
-            <MaterialIcons name="close" color="#fff" size={22} />
+            <MaterialIcons name="close" color="#000" size={22} />
           </Pressable>
 
           <View className="justify-center items-center">
@@ -241,9 +244,9 @@ const Table = ({ show, handleShow, trips }: TableProps) => {
                 </View>
                 <View className="bg-slate-100 border-l-2 flex">
                   <Text className="text-center">Sunday,April 26, 2020</Text>
-                  <View className="flex flex-row br-2 p-2 space-x-2 border-t-2 border-l-2">
+                  <View className="flex flex-row br-2 p-2 space-x-2 border-t-2 ">
                     {dataArray.map((number, index) => (
-                      <View className="border-r w-5" key={index}>
+                      <View className="border-r w-5 flex" key={index}>
                         <Text>{number - 1}</Text>
                       </View>
                     ))}
@@ -264,12 +267,11 @@ const Table = ({ show, handleShow, trips }: TableProps) => {
                 </View>
                 <ScrollView className="flex">
                   {Object.keys(Employee).map((person) => {
+                    console.log(Employee[person]);
                     intervals = generateIntervals(Employee[person]);
 
                     return (
                       <View key={person} className="flex flex-row w-5/5 border">
-                        <Text>hi</Text>
-                        {/* <Text>{`${person}的工作:`}</Text> */}
                         <View
                           key={person}
                           className="flex flex-row bg-white border-r justify-self-start"
@@ -307,18 +309,6 @@ const Table = ({ show, handleShow, trips }: TableProps) => {
                                 <Text className="">{startTime}</Text>
                               </View>
                             );
-                          }
-                          {
-                            /*return (
-                            <View
-                              key={index}
-                              className={`justify-self-start h-7 border-r`}
-                              style={{ minWidth: realValue }}
-                              // style={{ minWidth: `${portion}%` }}
-                            >
-                              <Text className="">{startTime}</Text>
-                            </View>
-                          );*/
                           }
                         })}
                       </View>

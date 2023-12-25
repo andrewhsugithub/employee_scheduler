@@ -9,15 +9,18 @@ import {
   ViewStyle,
   View,
   useColorScheme,
+  Modal,
 } from "react-native";
 import * as ScreenOrientation from "expo-screen-orientation";
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import DrawerContent from "@/components/drawer/DrawerContent";
 import { getAuth, signOut } from "firebase/auth";
 import { Badge } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GetCollectionProvider } from "@/context/getCollectionContext";
+import Toast from "react-native-toast-message";
+import { List } from "react-native-paper";
 
 export default function DrawerLayout() {
   const auth = getAuth();
@@ -26,10 +29,16 @@ export default function DrawerLayout() {
   const [orientation, setOrientation] =
     useState<ScreenOrientation.Orientation>(1);
   const [drawerStatus, setDrawerStatus] = useState<DrawerStatus>();
+  const [isPlaceholderVisible, setPlaceholderVisible] = useState(false);
+  const [ShowNotification, setShowNotification] = useState(false);
+
   const [drawerType, setDrawerType] = useState<
     "front" | "slide" | "back" | "permanent" | undefined
   >();
   const colorScheme = useColorScheme();
+
+  const NotificationMessage: string[] = ["Message1", "Message2", "Message3"];
+
   console.log("drawerType:", drawerType, "drawerStatus:", drawerStatus);
 
   const getOrientation = async () => {
@@ -97,7 +106,9 @@ export default function DrawerLayout() {
     router.push("/(auth)/SignIn");
   };
 
-  const handleNotificationInbox = () => {};
+  const handleNotificationInbox = () => {
+    setShowNotification(!setShowNotification);
+  };
 
   return (
     <GetCollectionProvider>
@@ -117,7 +128,10 @@ export default function DrawerLayout() {
           ),
           headerRight: () => (
             <View className="flex flex-row">
-              <Pressable className="m-2" onPress={handleNotificationInbox}>
+              <Pressable
+                className="m-2"
+                onPress={() => handleNotificationInbox()}
+              >
                 <Ionicons
                   name="notifications"
                   size={24}
@@ -125,6 +139,15 @@ export default function DrawerLayout() {
                 />
                 <Badge size={10} className="absolute z-40" />
               </Pressable>
+              <List.Section
+                title="Notification"
+                className="z-50"
+                titleStyle={{
+                  color: `${colorScheme === "dark" ? "white" : ""}`,
+                }}
+              >
+                <></>
+              </List.Section>
               <Pressable className="m-2" onPress={handleLogout}>
                 <Feather
                   name="log-out"
@@ -167,6 +190,7 @@ export default function DrawerLayout() {
           }}
         />
       </Drawer>
+      <Toast />
     </GetCollectionProvider>
   );
 }

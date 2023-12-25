@@ -1,5 +1,4 @@
 ﻿import { createContext, useContext, useEffect, useState } from "react";
-import NetInfo from "@react-native-community/netinfo";
 import {
   DocumentData,
   QuerySnapshot,
@@ -9,8 +8,8 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useCheckConnectionContext } from "./checkConnectionContext";
 import { getAuth, type User as AuthUser } from "firebase/auth";
+import { useCheckConnectionContext } from "./checkConnectionContext";
 
 interface CollectionType {
   userList?: { id: string; name: string }[];

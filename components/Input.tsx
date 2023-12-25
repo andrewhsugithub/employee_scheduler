@@ -35,35 +35,47 @@ const Input = <T extends FieldValues>({
         name={name as any}
         render={({
           field: { onChange, onBlur, value },
-          fieldState: { error },
+          fieldState: { invalid, error },
         }) => {
           return (
-            <View className="flex flex-row">
-              <TextInput
-                label={label}
-                onBlur={onBlur}
-                value={value}
-                onChangeText={onChange}
-                mode="flat"
-                className="flex-1 rounded-md"
-                underlineStyle={{
-                  // borderRadius: 9999,
-                  // width: "90%",
-                  // justifyContent: "center",
-                  // alignSelf: "center",
-                  // alignContent: "center",
-                  // start: "5%",
-                  display: "none",
-                }}
-                left={left}
-                right={right}
-                secureTextEntry={isPassword}
-              />
-            </View>
+            <>
+              <View className="flex flex-row">
+                <TextInput
+                  label={label}
+                  onBlur={onBlur}
+                  value={value}
+                  onChangeText={onChange}
+                  mode="flat"
+                  className="flex-1 rounded-md"
+                  underlineStyle={{
+                    // borderRadius: 9999,
+                    // width: "90%",
+                    // justifyContent: "center",
+                    // alignSelf: "center",
+                    // alignContent: "center",
+                    // start: "5%",
+                    display: "none",
+                  }}
+                  left={left}
+                  right={right}
+                  secureTextEntry={isPassword}
+                />
+              </View>
+              {invalid && (
+                <HelperText
+                  type="error"
+                  visible={true}
+                  padding="normal"
+                  className="my-0 py-0"
+                >
+                  {error?.message}
+                </HelperText>
+              )}
+            </>
           );
         }}
       />
-      {errorMessage && (
+      {/* {errorMessage && (
         <HelperText
           type="error"
           visible={true}
@@ -72,7 +84,7 @@ const Input = <T extends FieldValues>({
         >
           {errorMessage as string}
         </HelperText>
-      )}
+      )} */}
     </View>
   );
 };

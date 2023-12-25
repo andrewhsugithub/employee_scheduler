@@ -3,6 +3,7 @@ import { List } from "react-native-paper";
 import JobForm from "@/components/JobForm";
 import { useState } from "react";
 import { useGetCollectionContext } from "@/context/getCollectionContext";
+import { Control, FieldErrors, FieldValues } from "react-hook-form";
 
 // TODO turn into realtime database and make sure referential integrity
 
@@ -11,14 +12,19 @@ interface User {
   id: string;
 }
 
-interface AddJobPageProps {
-  control: any;
-  errors: any;
+interface AddJobPageProps<T extends FieldValues> {
+  control: Control<T>;
+  errors: FieldErrors<T>;
   crewArray: any;
   users: User[];
 }
 
-const AddJobPage = ({ control, errors, crewArray, users }: AddJobPageProps) => {
+const AddJobPage = <T extends FieldValues>({
+  control,
+  errors,
+  crewArray,
+  users,
+}: AddJobPageProps<T>) => {
   const colorScheme = useColorScheme();
   const { currentAuth } = useGetCollectionContext();
 

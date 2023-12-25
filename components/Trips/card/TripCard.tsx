@@ -2,14 +2,22 @@
 import { Card, Paragraph, ProgressBar } from "react-native-paper";
 import { Pressable, View } from "react-native";
 import InfoButton from "./InfoButton";
-import { DocumentData, Timestamp, doc, onSnapshot } from "firebase/firestore";
+import {
+  DocumentData,
+  Timestamp,
+  arrayUnion,
+  doc,
+  onSnapshot,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Info from "../Info";
-import Rollcall from "../ongoing/Rollcall";
 import Table from "../TableComponents";
 import RegisterTrip from "../RegisterTrip";
 import useFetch from "@/hooks/useFetch";
 import { useGetCollectionContext } from "@/context/getCollectionContext";
+import Toast from "react-native-toast-message";
+import PassForTrip from "../ongoing/PassForTrip";
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -65,7 +73,7 @@ const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
   const [progress, setProgress] = useState<number>(0);
 
   const [showTripInfo, setShowTripInfo] = useState(false);
-  const [showRollCall, setShowRollCall] = useState(false);
+  const [showPassForTripPage, setShowPassForTripPage] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
 
@@ -77,10 +85,11 @@ const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
     "trips",
     tripId!
   );
+
   useEffect(() => {
     if (loadTrip || Object.keys(tripData!).length === 0) return;
 
-    console.log("tripData:", tripData, tripId!);
+    // console.log("tripData:", tripData, tripId!);
 
     setCrew([
       {
@@ -117,7 +126,36 @@ const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
 
   useEffect(() => {
     setExpanded(false);
-  }, [showTripInfo, showRollCall, showDetails, showEdit]);
+  }, [showTripInfo, showPassForTripPage, showDetails, showEdit]);
+
+  const showToast = (person: string) => {
+    Toast.show({
+      type: "error",
+      text1: "Overtime",
+      text2: person + " worked overtime ( >14hr )👋",
+      position: "bottom",
+    });
+  };
+
+  useEffect(() => {
+    if (!isOngoing) {
+      // interval of 30 minutes
+      setInterval(() => {
+        tripData?.crew?.map((crew: any) => {
+          crew?.crew_jobs?.map((job: any) => {
+            for (const [key, value] of Object.entries(job?.days)) {
+              if ((value as number) > 14) showToast("crew"); //! add notification
+            }
+          });
+        });
+        tripData?.captain_job?.map((job: any) => {
+          for (const [key, value] of Object.entries(job?.days)) {
+            if ((value as number) > 14) showToast("captain"); //! add notification
+          }
+        });
+      }, 1000 * 60 * 30);
+    }
+  }, [isOngoing]);
 
   if (!loadTrip && Object.keys(tripData!).length === 0) return; //! here add a dialog say that need wifi connection
 
@@ -147,7 +185,7 @@ const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
                   setShowTripInfo(showModal)
                 }
                 handleShowRollCall={(showModal: boolean) =>
-                  setShowRollCall(showModal)
+                  setShowPassForTripPage(showModal)
                 }
                 handleShowDetails={(showModal: boolean) =>
                   setShowDetails(showModal)
@@ -187,14 +225,17 @@ const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
           trips={tripData!}
           handleShow={(showModal: boolean) => setShowTripInfo(showModal)}
           crew={crew}
+          tripId={tripId!}
         />
       )}
       {isOngoing && (
         <>
-          {showRollCall && (
-            <Rollcall
-              show={showRollCall}
-              handleShow={(showModal: boolean) => setShowRollCall(showModal)}
+          {showPassForTripPage && (
+            <PassForTrip
+              show={showPassForTripPage}
+              handleShow={(showModal: boolean) =>
+                setShowPassForTripPage(showModal)
+              }
               password={crewPass}
             />
           )}

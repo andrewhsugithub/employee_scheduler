@@ -17,6 +17,7 @@ import Schedule from "./card/Info/Schedule";
 import { Divider, List, Searchbar, TextInput } from "react-native-paper";
 import { ScrollView } from "react-native-gesture-handler";
 import { useGetCollectionContext } from "@/context/getCollectionContext";
+import { useCheckConnectionContext } from "@/context/checkConnectionContext";
 
 interface TripProps {
   name: string;
@@ -24,9 +25,10 @@ interface TripProps {
   handleShow: (showModal: boolean) => void;
   trips: DocumentData;
   crew: User[];
+  tripId: string;
 }
 
-const Info = ({ name, show, handleShow, trips, crew }: TripProps) => {
+const Info = ({ name, show, handleShow, trips, crew, tripId }: TripProps) => {
   const { currentAuth: auth } = useGetCollectionContext();
   const colorSheme = useColorScheme();
   const [selectedCrew, setSelectedCrew] = useState<User>({
@@ -36,6 +38,9 @@ const Info = ({ name, show, handleShow, trips, crew }: TripProps) => {
   const [showCrewList, setShowCrewList] = useState(false);
   const [searchQuery, setSearchQuery] = useState(auth?.displayName!);
   const [filteredCrew, setFilteredCrew] = useState<User[]>(crew);
+  const [showDisconnect, setShowDisconnect] = useState(
+    !useCheckConnectionContext() && trips === null
+  );
 
   const onChangeSearch = (query: string) => {
     setSearchQuery(query);
@@ -58,9 +63,24 @@ const Info = ({ name, show, handleShow, trips, crew }: TripProps) => {
         className={`absolute bg-transparent z-10 right-0 left-0 top-0 bottom-0 flex-1 items-center justify-center`}
       > */}
       <View className={`p-10 bg-white dark:bg-slate-800 h-full`}>
-        <Text className="text-center font-bold text-2xl dark:text-white py-2">
-          Schedule
+        <Text className="text-center font-bold text-2xl dark:text-white py-2 uppercase">
+          schedule
         </Text>
+        <Modal
+          animationType="slide"
+          visible={showDisconnect}
+          presentationStyle="pageSheet"
+        >
+          <View className="absolute bg-transparent z-10 right-0 left-0 top-0 bottom-0 flex-1 items-center justify-center">
+            <Text>no internet connected!</Text>
+            <Pressable
+              onPress={() => setShowDisconnect(false)}
+              className="absolute top-4 right-4"
+            >
+              <MaterialIcons name="close" color="#000" size={22} />
+            </Pressable>
+          </View>
+        </Modal>
         <TextInput
           label="Selected Crew"
           onChangeText={onChangeSearch}
@@ -115,7 +135,7 @@ const Info = ({ name, show, handleShow, trips, crew }: TripProps) => {
               selectedCrew.id !== user.id ? "hidden" : ""
             }  h-full p-8 -z-50`}
           >
-            <Schedule trip={trips!} crewId={user.id} />
+            <Schedule trip={trips!} crewId={user.id} tripId={tripId} />
           </View>
         ))}
 

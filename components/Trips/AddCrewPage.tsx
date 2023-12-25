@@ -1,5 +1,14 @@
 ﻿import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import {
+  Control,
+  Controller,
+  type FieldValues,
+  type UseFieldArrayPrepend,
+  type UseFieldArrayRemove,
+  useFieldArray,
+  useForm,
+  type FieldArrayWithId,
+} from "react-hook-form";
 import { TextInput } from "react-native-paper";
 import { Searchbar, IconButton } from "react-native-paper";
 import * as React from "react";
@@ -15,9 +24,9 @@ interface User {
 }
 
 interface AddCrewPageProps {
-  fields: any;
   prepend: any;
-  remove: any;
+  fields: any;
+  remove: UseFieldArrayRemove;
   users: User[];
 }
 

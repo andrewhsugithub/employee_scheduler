@@ -1,5 +1,5 @@
 ﻿import { useState } from "react";
-import { View } from "react-native";
+import { View, Alert } from "react-native";
 import { TextInput } from "react-native-paper";
 import Dialog from "react-native-dialog";
 
@@ -8,6 +8,7 @@ interface DialogProps {
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
   setPasswordValid: React.Dispatch<React.SetStateAction<boolean>>;
   correctPassword: string;
+  handleAfterConfirm: () => Promise<void>;
 }
 
 const InputPasswordPaper = ({
@@ -15,23 +16,25 @@ const InputPasswordPaper = ({
   setShowDialog,
   correctPassword,
   setPasswordValid,
+  handleAfterConfirm,
 }: DialogProps) => {
   const [visible, setVisible] = useState(true);
   const [typedPassword, setTypedPassword] = useState("");
 
   if (!showDialog) return;
 
-  const confirmPassword = () => {
+  const confirmPassword = async () => {
+    console.log("confirm password");
     setPasswordValid(correctPassword === typedPassword);
     if (correctPassword === typedPassword) {
-      setShowDialog(false);
       setTypedPassword("");
-      alert("Correct Password!");
+      Alert.alert("Password Status", "Your password is correct", [
+        { text: "OK", onPress: () => setShowDialog(false) },
+      ]);
+      await handleAfterConfirm();
     } else alert("Wrong Password!");
   };
 
-  // }
-  //className="flex h-40 m-12 p-10 bg-black"
   return (
     <View>
       <Dialog.Container visible={showDialog}>

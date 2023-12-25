@@ -1,8 +1,8 @@
-﻿import PhoneInput, { isValidNumber } from "react-native-phone-number-input";
-import { CountryCodeList } from "react-native-country-picker-modal";
+﻿// import PhoneInput, { isValidNumber } from "react-native-phone-number-input";
+// import { CountryCodeList } from "react-native-country-picker-modal";
 import { z } from "zod";
 
-const countryCode = z.enum(CountryCodeList);
+// const countryCode = z.enum(CountryCodeList);
 
 export const AuthSchema = z
   .object({

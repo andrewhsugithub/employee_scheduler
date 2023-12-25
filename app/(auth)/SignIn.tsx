@@ -21,7 +21,6 @@ import {
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import { useEffect, useState } from "react";
-import { Zocial, Octicons } from "@expo/vector-icons";
 import * as LocalAuthentication from "expo-local-authentication";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Input from "@/components/Input";

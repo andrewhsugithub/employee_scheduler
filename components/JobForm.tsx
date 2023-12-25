@@ -7,9 +7,18 @@
   ScrollView,
   Modal,
 } from "react-native";
-import { Controller, useFieldArray } from "react-hook-form";
+import {
+  type Control,
+  Controller,
+  type FieldErrors,
+  type FieldValues,
+  useFieldArray,
+  type ArrayPath,
+  type FieldArray,
+  Path,
+} from "react-hook-form";
 import { useState } from "react";
-import { TextInput } from "react-native-paper";
+import { HelperText, TextInput } from "react-native-paper";
 import PickDate from "./PickDate";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { collection, addDoc } from "firebase/firestore";
@@ -17,14 +26,19 @@ import Input from "./Input";
 import DateInput from "./DateInput";
 import { useGetCollectionContext } from "@/context/getCollectionContext";
 
-interface JobFormProps {
+interface JobFormProps<T extends FieldValues> {
   crewId: string;
   control: any;
   errors: any;
   crewIndex: number;
 }
 
-const JobForm = ({ crewId, control, errors, crewIndex }: JobFormProps) => {
+const JobForm = <T extends FieldValues>({
+  crewId,
+  control,
+  errors,
+  crewIndex,
+}: JobFormProps<T>) => {
   // const [toggle, setToggle] = useState(false);
   const { currentAuth } = useGetCollectionContext();
   const captainId = currentAuth?.uid;
@@ -38,8 +52,8 @@ const JobForm = ({ crewId, control, errors, crewIndex }: JobFormProps) => {
   });
 
   return (
-    <View className="h-64">
-      <ScrollView className="h-46">
+    <View className="h-72">
+      <ScrollView className="h-56">
         {fields.map((item, index) => (
           <View className="p-3 border-b-2 dark:border-white" key={item.id}>
             <Input
@@ -48,40 +62,6 @@ const JobForm = ({ crewId, control, errors, crewIndex }: JobFormProps) => {
               name={`${jobRole}.${index}.jobName`}
               label={"Job Name"}
             />
-            {/* <Controller
-              control={control}
-              name={`${jobRole}.${index}.jobName`}
-              render={({
-                field: { onChange, onBlur, value },
-                fieldState: { error },
-              }) => {
-                return (
-                  <View className="flex flex-row py-2 rounded-2xl">
-                    <TextInput
-                      label="Job Name"
-                      onBlur={onBlur}
-                      value={value}
-                      onChangeText={onChange}
-                      mode="outlined"
-                      className=" bg-white flex-1"
-                    />
-                  </View>
-                );
-              }}
-            />
-            {crewId !== captainId
-              ? errors?.crew?.[crewIndex!]?.crew_job?.[index]?.jobName
-                  ?.message && (
-                  <Text>
-                    {
-                      errors?.crew?.[crewIndex!]?.crew_job?.[index]?.jobName
-                        ?.message
-                    }
-                  </Text>
-                )
-              : errors?.captain_job?.[index]?.jobName?.message && (
-                  <Text>{errors?.captain_job?.[index]?.jobName?.message}</Text>
-                )} */}
 
             <View className="flex flex-row py-3 space-x-6 justify-center">
               <View className="w-52">
@@ -91,20 +71,6 @@ const JobForm = ({ crewId, control, errors, crewIndex }: JobFormProps) => {
                   name={`${jobRole}.${index}.startDate`}
                   label="Start Date"
                 />
-                {/* <Controller
-                  control={control}
-                  name={`${jobRole}.${index}.startDate`}
-                  render={({
-                    field: { onChange, onBlur, value },
-                    fieldState: { error },
-                  }) => (
-                    <PickDate
-                      onChange={onChange}
-                      value={value ?? new Date()}
-                      label="Start Date"
-                    />
-                  )}
-                /> */}
               </View>
               <View className="w-52">
                 <DateInput
@@ -113,35 +79,19 @@ const JobForm = ({ crewId, control, errors, crewIndex }: JobFormProps) => {
                   name={`${jobRole}.${index}.endDate`}
                   label="End Date"
                 />
-                {/*<Controller
-                  control={control}
-                  name={`${jobRole}.${index}.endDate`}
-                  render={({
-                    field: { onChange, onBlur, value },
-                    fieldState: { error },
-                  }) => (
-                    <PickDate
-                      onChange={onChange}
-                      value={value ?? new Date()}
-                      label="End Date"
-                    />
-                  )}
-                  />*/}
               </View>
             </View>
 
             <Pressable
               onPress={() => remove(index)}
-              className="py-1 p-3 bg-red-400 rounded-full"
+              className="mt-3 py-1 p-3 bg-red-400 rounded-full"
             >
               <Text className="text-center">Delete Job</Text>
             </Pressable>
           </View>
         ))}
-        {/* <Text>Hi</Text> */}
       </ScrollView>
       <View className="py-1">
-        {/* <View className="p-2 border-b my-4"></View> */}
         <Pressable
           onPress={() =>
             prepend({
@@ -149,7 +99,7 @@ const JobForm = ({ crewId, control, errors, crewIndex }: JobFormProps) => {
               description: "",
               startDate: new Date(),
               endDate: new Date(),
-            })
+            } as FieldArray<T, ArrayPath<T>> | FieldArray<T, ArrayPath<T>>[])
           }
           className="mt-2 py-1 p-3 bg-blue-300 rounded-full"
         >

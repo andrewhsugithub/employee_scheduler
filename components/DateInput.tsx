@@ -1,6 +1,12 @@
 ﻿//! DATE INPUT
 
-import { Control, Controller, FieldErrors, FieldValues } from "react-hook-form";
+import {
+  Control,
+  Controller,
+  FieldErrors,
+  FieldValues,
+  get,
+} from "react-hook-form";
 import { View } from "react-native";
 import { HelperText, TextInput } from "react-native-paper";
 import PickDate from "./PickDate";
@@ -27,20 +33,32 @@ const DateInput = <T extends FieldValues>({
         name={name as any}
         render={({
           field: { onChange, onBlur, value },
-          fieldState: { error },
+          fieldState: { invalid, error },
         }) => {
           return (
-            <View className="flex flex-row">
-              <PickDate
-                onChange={onChange}
-                value={value ?? new Date()}
-                label={label}
-              />
-            </View>
+            <>
+              <View className="flex flex-row">
+                <PickDate
+                  onChange={onChange}
+                  value={value ?? new Date()}
+                  label={label}
+                />
+              </View>
+              {invalid && (
+                <HelperText
+                  type="error"
+                  visible={true}
+                  padding="normal"
+                  className="my-0 py-0"
+                >
+                  {error?.message}
+                </HelperText>
+              )}
+            </>
           );
         }}
       />
-      {errorMessage && (
+      {/* {errorMessage && (
         <HelperText
           type="error"
           visible={true}
@@ -49,7 +67,7 @@ const DateInput = <T extends FieldValues>({
         >
           {errorMessage as string}
         </HelperText>
-      )}
+      )} */}
     </View>
   );
 };

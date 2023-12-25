@@ -70,7 +70,7 @@ const Profile = () => {
               onChangeText={(text) => setEmail(text)}
             />
           </View>
-          <View className="flex-col space-x-2 px-20 py-4">
+          {/* <View className="flex-col space-x-2 px-20 py-4">
             <TextInput
               label="📞Phone Number"
               value={phoneNumber}
@@ -79,7 +79,7 @@ const Profile = () => {
               className="flex-1 rounded-md"
               onChangeText={(text) => setPhoneNumber(text)}
             />
-          </View>
+          </View> */}
           <View className="py-12 px-20">
             <Pressable
               className="rounded-2xl bg-blue-600 p-2"

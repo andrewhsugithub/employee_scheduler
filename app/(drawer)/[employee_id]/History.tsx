@@ -89,7 +89,7 @@ const History = () => {
             </View>
           )}
         </View>
-        <View className="p-3 w-60 h-60">
+        {/*<View className="p-3 w-60 h-60">
           <Pressable className="m-0" onPress={() => setShowModal(true)}>
             <View className="bg-transparent rounded-2xl flex-1 p-4 w-60 py-8">
               <View className="border-dashed border-4 dark:border-white p-20 rounded-2xl h-56 w-56">
@@ -102,7 +102,7 @@ const History = () => {
               </View>
             </View>
           </Pressable>
-        </View>
+        </View>*/}
       </ScrollView>
       <AddTripButton captainName={params.employee_id as string} />
       <RegisterTrip

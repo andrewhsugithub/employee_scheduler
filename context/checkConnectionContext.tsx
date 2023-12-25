@@ -47,14 +47,14 @@ export const CheckConnectionProvider = ({
       // console.log("Connection type", state.type);
       // console.log("Is connected?", state.isConnected);
       // hello();
-      console.log(
-        "connectionType: ",
-        connectionType,
-        "isConnected: ",
-        isConnected
-      );
       setIsConnected(state.isConnected!);
       setConnectionType(state.type!);
+      console.log(
+        "connectionType: ",
+        state.type!,
+        "isConnected: ",
+        state.isConnected!
+      );
     });
     return () => unsubscribe();
   }, []);

@@ -19,7 +19,6 @@ import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
   updateEmail,
-  updatePhoneNumber,
   updateProfile,
 } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -30,19 +29,19 @@ import Input from "@/components/Input";
 const Auth = () => {
   const router = useRouter();
 
-  const [value, setValue] = useState("");
-  const [formattedValue, setFormattedValue] = useState("");
-  const [valid, setValid] = useState(true);
+  // const [value, setValue] = useState("");
+  // const [formattedValue, setFormattedValue] = useState("");
+  // const [valid, setValid] = useState(true);
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const phoneInput = useRef<PhoneInput>(null);
+  // const phoneInput = useRef<PhoneInput>(null);
 
   // sign in process here
   const SignUp = async (data: AuthFormSchema) => {
     setIsSubmitting(true);
 
     // TODO: need to format phone number ex: omit (09)
-    const phone = `+${phoneInput.current?.getCallingCode()} ${value}`;
+    // const phone = `+${phoneInput.current?.getCallingCode()} ${value}`;
 
     try {
       const userCredential = await createUserWithEmailAndPassword(
@@ -59,7 +58,7 @@ const Auth = () => {
       const user = {
         name: data.username,
         email: data.email.trim(),
-        phone_number: phone,
+        // phone_number: phone,
         created_at: new Date().toUTCString(),
       };
       console.log("user: ", user);
@@ -96,7 +95,7 @@ const Auth = () => {
   return (
     <SafeAreaView className="h-screen">
       <View className="h-full p-40 flex flex-col justify-around">
-        <KeyboardAvoidingView behavior={"padding"} className="flex-1">
+        <KeyboardAvoidingView behavior={"position"} className="flex-1">
           <Text className="text-3xl text-black dark:text-white font-bold text-center pb-3">
             Sign Up Form
           </Text>
@@ -165,65 +164,62 @@ const Auth = () => {
               )
             }
           />
-          <View>
-            <PhoneInput
-              ref={phoneInput}
-              countryPickerButtonStyle={{ width: "20%" }}
-              containerStyle={{ width: "100%" }}
-              defaultValue={value}
-              defaultCode="TW"
-              layout="first"
-              onChangeText={(text) => setValue(text)}
-              onChangeFormattedText={(text) => {
-                setFormattedValue(text);
-                submitted && setValid(phoneInput.current?.isValidNumber(text)!);
-              }}
-              // withDarkTheme
-              withShadow
-            />
-            {!valid && <Text>Phone number is not valid</Text>}
-          </View>
-          <View>
-            <Pressable
-              className="bg-green-500 p-4 rounded-full items-center mt-6 mb-6"
-              onPress={handleSubmit(
-                (data) => {
-                  const checkValid =
-                    phoneInput.current?.isValidNumber(formattedValue);
-                  setValid(checkValid!);
-                  setSubmitted(true);
-                  if (!checkValid) return;
-                  SignUp(data);
-                },
-                (data) => {
-                  const checkValid =
-                    phoneInput.current?.isValidNumber(formattedValue);
-                  setValid(checkValid!);
-                  console.log("data error:", data);
-                  setSubmitted(true);
-                }
-              )}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator
-                  size="small"
-                  className="text-gray-400 dark:text-white"
-                />
-              ) : (
-                <Text className="text-2xl font-semibold">Sign Up</Text>
-              )}
-            </Pressable>
-            <Text className="text-right dark:text-white">
-              Have an account?{" "}
-              <Link
-                href={`/(auth)/SignIn`}
-                className="underline dark:text-white"
-              >
-                <Text>Sign In?</Text>
-              </Link>
-            </Text>
-          </View>
         </KeyboardAvoidingView>
+        {/* <View className="">
+          <PhoneInput
+            ref={phoneInput}
+            countryPickerButtonStyle={{ width: "20%" }}
+            containerStyle={{ width: "100%" }}
+            defaultValue={value}
+            defaultCode="TW"
+            layout="first"
+            onChangeText={(text) => setValue(text)}
+            onChangeFormattedText={(text) => {
+              setFormattedValue(text);
+              submitted && setValid(phoneInput.current?.isValidNumber(text)!);
+            }}
+            // withDarkTheme
+            withShadow
+          />
+          {!valid && <Text>Phone number is not valid</Text>}
+        </View> */}
+        <View>
+          <Pressable
+            className="bg-green-500 p-4 rounded-full items-center mt-6 mb-6"
+            onPress={handleSubmit(
+              (data) => {
+                // const checkValid =
+                //   phoneInput.current?.isValidNumber(formattedValue);
+                // setValid(checkValid!);
+                setSubmitted(true);
+                // if (!checkValid) return;
+                SignUp(data);
+              },
+              (data) => {
+                // const checkValid =
+                //   phoneInput.current?.isValidNumber(formattedValue);
+                // setValid(checkValid!);
+                console.log("data error:", data);
+                setSubmitted(true);
+              }
+            )}
+          >
+            {isSubmitting ? (
+              <ActivityIndicator
+                size="small"
+                className="text-gray-400 dark:text-white"
+              />
+            ) : (
+              <Text className="text-2xl font-semibold">Sign Up</Text>
+            )}
+          </Pressable>
+          <Text className="text-right dark:text-white">
+            Have an account?{" "}
+            <Link href={`/(auth)/SignIn`} className="underline dark:text-white">
+              <Text>Sign In?</Text>
+            </Link>
+          </Text>
+        </View>
       </View>
     </SafeAreaView>
   );

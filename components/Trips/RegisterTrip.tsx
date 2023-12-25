@@ -17,27 +17,17 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { AntDesign, MaterialIcons } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
-
+import { useState } from "react";
 import {
   type RegisterFormSchema,
   RegisterSchema,
   type JobFormSchema,
 } from "@/lib/validations/registerSchema";
-import {
-  Controller,
-  NonUndefined,
-  useFieldArray,
-  useForm,
-} from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { TextInput } from "react-native-paper";
-import PickDate from "../PickDate";
 import AddCrewPage from "./AddCrewPage";
 import AddJobPage from "./AddJobPage";
-import JobForm from "../JobForm";
 import RegisterTripInfo from "./RegisterTripInfo";
-import useFetch from "@/hooks/useFetch";
 import { Button, Dialog, Portal, PaperProvider } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useGetCollectionContext } from "@/context/getCollectionContext";
@@ -57,23 +47,8 @@ const RegisterTrip = ({ show, handleShow }: RegisterTripProps) => {
   const captainId = currentAuth?.uid;
   const colorScheme = useColorScheme();
 
-  // const { loading: loadUsers, userList: allUsers } = useFetch(
-  //   collection(db, "users"),
-  //   false,
-  //   "users"
-  // );
-
   const { userLoading: loadUsers, userList: allUsers } =
     useGetCollectionContext();
-
-  // const [users, setUsers] = useState<User[]>([]);
-  // useEffect(() => {
-  //   const userList: User[] = [];
-  //   allUsers?.forEach((user: any) => {
-  //     userList.push({ id: user.id, name: user.data().name });
-  //   });
-  //   setUsers(userList);
-  // }, [allUsers]);
 
   const addJob = async (
     jobRef: CollectionReference,
@@ -86,7 +61,7 @@ const RegisterTrip = ({ show, handleShow }: RegisterTripProps) => {
       real_starting_datetime: jobData.startDate,
       real_ending_datetime: jobData.endDate,
       is_present: false,
-      is_late: false, // if >10min=>late
+      is_late: true, // if >10min=>late
       has_complete_job: false,
       has_worked_overtime: false,
     };
@@ -129,6 +104,9 @@ const RegisterTrip = ({ show, handleShow }: RegisterTripProps) => {
               allUsers!.findIndex((user: User) => user.id === crew.crew_id)
             ]?.name,
           crew_pass: Math.random().toString(36).slice(-8),
+          crew_aboard_time: null,
+          crew_offboard_time: null,
+          days: [],
         };
       })
     );
@@ -141,6 +119,9 @@ const RegisterTrip = ({ show, handleShow }: RegisterTripProps) => {
           ?.name,
       captain_job: captainJobInfo,
       captain_pass: Math.random().toString(36).slice(-8),
+      captain_aboard_time: null,
+      captain_offboard_time: null,
+      captain_days: [],
       location: data.location,
       start_date: data.startDate,
       end_date: data.endDate,
