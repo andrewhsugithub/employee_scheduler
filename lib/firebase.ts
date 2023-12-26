@@ -1,6 +1,14 @@
 ﻿// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import {
+  CACHE_SIZE_UNLIMITED,
+  disableNetwork,
+  getFirestore,
+  enableMultiTabIndexedDbPersistence,
+  enableNetwork,
+} from "firebase/firestore";
+import { initializeAuth, getReactNativePersistence } from "firebase/auth";
+import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -18,7 +26,30 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// const app = initializeApp(firebaseConfig, {
+//   localCache: persistentLocalCache(/*settings*/ {}),
+// });
+const app = initializeApp(firebaseConfig, {});
 const db = getFirestore(app);
+// disableNetwork(db)
+//   .then(() => {
+//     console.log("Network disabled for offline persistence");
+//   })
+//   .catch((err) => {
+//     console.error("Failed to disable network:", err);
+//   });
 
-export { app, db };
+// Enable network when you want to sync data
+// enableNetwork(db)
+//   .then(() => {
+//     console.log("Network enabled for data sync");
+//   })
+//   .catch((err) => {
+//     console.error("Failed to enable network:", err);
+//   });
+const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(ReactNativeAsyncStorage),
+});
+auth.useDeviceLanguage();
+
+export { app, db, auth };

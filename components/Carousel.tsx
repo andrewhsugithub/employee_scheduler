@@ -63,12 +63,12 @@ const Carousel = ({ control, errors }: CarouselJobProps) => {
                   <Text>{errors?.crew?.[index]?.crew_name?.message}</Text>
                 )}
                 <Text>id:{item.id}</Text>
-                <JobForm
+                {/* <JobForm
                   crewIndex={index}
                   role="crew"
                   control={control}
                   errors={errors}
-                />
+                /> */}
                 <Pressable
                   onPress={() => {
                     const temp = index;

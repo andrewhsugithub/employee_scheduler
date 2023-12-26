@@ -1,15 +1,8 @@
-﻿import Interval from "../../components/Interval";
-import React from "react";
+﻿import React from "react";
 import uuid from "react-native-uuid";
-import {
-  SafeAreaView,
-  View,
-  Text,
-  ScrollView,
-  FlatList,
-  Pressable,
-} from "react-native";
-import { Link, Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { View, Text, FlatList, Pressable, Modal } from "react-native";
+import Interval from "@/components/Interval";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 const timeIntervals = [1, 2, 3, 4, 5, 6, 7, 8];
 
@@ -86,16 +79,14 @@ const workers = [
   },
 ];
 
-const MainPage = () => {
-  const router = useRouter();
-  const params = useLocalSearchParams();
+interface ScheduleProps {
+  show: boolean;
+  handleShow: (showModal: boolean) => void;
+}
 
+const Schedule = ({ show, handleShow }: ScheduleProps) => {
   return (
-    <SafeAreaView className="h-screen">
-      <Stack.Screen options={{ headerShown: false }} />
-      <Text className="text-center font-bold text-xl py-8">
-        Job Scheduler for crew {params.trip_id}
-      </Text>
+    <Modal animationType="slide" visible={show} presentationStyle="fullScreen">
       <View className="flex flex-row px-8 items-center">
         <Text className="text-center font-bold text-2xl w-1/5">Name</Text>
         <View className="flex flex-row justify-between items-center w-4/5">
@@ -113,14 +104,14 @@ const MainPage = () => {
         )}
         keyExtractor={(item) => "" + item.id}
       />
-      <Link href={`/`} className="bg-red-300">
-        <Text>Home:</Text>
-      </Link>
-      <Pressable className="mt-3 bg-red-300" onPress={() => router.back()}>
-        <Text>Back: {"<="}</Text>
+      <Pressable
+        onPress={() => handleShow(false)}
+        className="absolute top-2 right-2"
+      >
+        <MaterialIcons name="close" color="#fff" size={22} />
       </Pressable>
-    </SafeAreaView>
+    </Modal>
   );
 };
 
-export default MainPage;
+export default Schedule;
