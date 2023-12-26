@@ -7,13 +7,16 @@ import React, { useEffect, useState } from "react";
 import { View, Text, Pressable, ActivityIndicator } from "react-native";
 import InputPasswordPaper from "../Dialog";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { isAborted } from "zod";
 
 interface ItemProps {
   item: {
     id?: string;
     password?: string;
     tripId?: string;
-    days: any;
+    isDateExpired: boolean;
+    crewId: string;
+    isAboard: boolean;
   };
 }
 
@@ -24,8 +27,9 @@ const AgendaItem = ({ item }: ItemProps) => {
   const [isLate, setIsLate] = useState(false);
   const [isOvertime, setIsOvertime] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
+  const [days, setDays] = useState<Record<string, number>>({});
 
-  if (Object.keys(item).length === 2) {
+  if (!("id" in item)) {
     return (
       <View className="pl-4 h-12 justify-center border-b-2 border-b-slate-400">
         <Text className="text-slate-400 text-sm">
@@ -35,12 +39,26 @@ const AgendaItem = ({ item }: ItemProps) => {
     );
   }
 
+  console.log("isAboard in item:", item.isAboard);
+
   const { loading, data } = useFetch(
     doc(db, "jobs", item?.id!),
     true,
     "jobs",
     item?.id!
   );
+
+  const { loading: userLoading, data: userData } = useFetch(
+    doc(db, "users", item?.crewId!),
+    true,
+    "users",
+    item?.crewId!
+  );
+  useEffect(() => {
+    if (userLoading) return;
+    setDays(userData?.days || {});
+    console.log("changed days", userData?.days);
+  }, [userLoading, userData]);
 
   useEffect(() => {
     if (loading) return;
@@ -65,8 +83,8 @@ const AgendaItem = ({ item }: ItemProps) => {
 
   const handlePresent = async () => {
     const startWorkingTime = new Timestamp(
-      data?.expected_starting_datetime.seconds,
-      data?.expected_starting_datetime.nanoseconds
+      data?.expected_starting_datetime?.seconds,
+      data?.expected_starting_datetime?.nanoseconds
     ).toDate();
     const currentDate10MinAgo = new Date(new Date().getTime() - 10 * 60 * 1000);
     await updateJob({
@@ -96,18 +114,22 @@ const AgendaItem = ({ item }: ItemProps) => {
 
   const handleComplete = async () => {
     const endWorkingTime = new Timestamp(
-      data?.expected_ending_datetime.seconds,
-      data?.expected_ending_datetime.nanoseconds
+      data?.expected_ending_datetime?.seconds,
+      data?.expected_ending_datetime?.nanoseconds
     ).toDate();
     const startWorkingTime = new Timestamp(
-      data?.expected_starting_datetime.seconds,
-      data?.expected_starting_datetime.nanoseconds
+      data?.expected_starting_datetime?.seconds,
+      data?.expected_starting_datetime?.nanoseconds
     ).toDate();
-    const orgDiffHours = Math.round(
+    const realStartWorkingTime = new Timestamp(
+      data?.real_starting_datetime?.seconds,
+      data?.real_starting_datetime?.nanoseconds
+    ).toDate();
+    const orgDiffHours = Math.floor(
       (endWorkingTime.getTime() - startWorkingTime.getTime()) / 36e5
     );
-    let diffHours = Math.round(
-      (new Date().getTime() - startWorkingTime.getTime()) / 36e5
+    let diffHours = Math.floor(
+      (new Date().getTime() - realStartWorkingTime.getTime()) / 36e5
     );
     await updateJob({
       has_complete_job: true,
@@ -115,30 +137,29 @@ const AgendaItem = ({ item }: ItemProps) => {
       real_ending_datetime: new Date(),
     });
 
-    const dates: Record<string, number> = item?.days || {};
-    let startingDate = startWorkingTime;
-    let startHour = startWorkingTime.getHours();
+    //! days
+    let startingDate = realStartWorkingTime;
+    let startHour = realStartWorkingTime.getHours();
     while (diffHours + startHour >= 24) {
       const startDateString = getYearMonthDayString(startingDate);
-      dates[startDateString] = (dates[startDateString] || 0) + 24 - startHour;
+      days[startDateString] = (days[startDateString] || 0) + 24 - startHour;
       diffHours -= 24 - startHour;
       startHour = 0;
       startingDate.setDate(startingDate.getDate() + 1);
     }
     const startDateString = getYearMonthDayString(startingDate);
-    dates[startDateString] = (dates[startDateString] || 0) + diffHours;
+    days[startDateString] = (days[startDateString] || 0) + diffHours;
 
-    const docRef = doc(db, "trips", item?.tripId!);
-    const newDates = { ...item?.days!, ...dates };
-    await updateDoc(docRef, { days: newDates });
+    const docRef = doc(db, "users", item?.crewId!);
+    await updateDoc(docRef, { days: days });
 
     // local update
-    const tripDoc = await AsyncStorage.getItem("trips_" + item?.tripId!);
-    const trip = JSON.parse(tripDoc!);
-    const newTrip = { ...trip, days: newDates };
+    const userDoc = await AsyncStorage.getItem("users_" + item?.crewId!);
+    const trip = JSON.parse(userDoc!);
+    const newDates = { ...trip, days: days };
     await AsyncStorage.setItem(
-      "trips_" + item?.tripId!,
-      JSON.stringify(newTrip)
+      "users_" + item?.tripId!,
+      JSON.stringify(newDates)
     );
     //! todo add notification
   };
@@ -159,54 +180,85 @@ const AgendaItem = ({ item }: ItemProps) => {
               {`${isLate ? "late" : "not late"}`}
             </Text>
           )}
-          <Text className="text-xs text-black text-left">
-            {getFormattedHour(
-              new Timestamp(
-                data?.expected_starting_datetime.seconds,
-                data?.expected_starting_datetime.nanoseconds
-              ).toDate()
-            )}{" "}
-            ~{" "}
-            {getFormattedHour(
-              new Timestamp(
-                data?.expected_ending_datetime.seconds,
-                data?.expected_ending_datetime.nanoseconds
-              ).toDate()
-            )}
-          </Text>
+          {!item.isDateExpired ? (
+            <Text className="text-xs text-black text-left">
+              {getFormattedHour(
+                new Timestamp(
+                  data?.expected_starting_datetime?.seconds,
+                  data?.expected_starting_datetime?.nanoseconds
+                ).toDate()
+              )}{" "}
+              ~{" "}
+              {getFormattedHour(
+                new Timestamp(
+                  data?.expected_ending_datetime?.seconds,
+                  data?.expected_ending_datetime?.nanoseconds
+                ).toDate()
+              )}
+            </Text>
+          ) : (
+            <Text className="text-xs text-black text-left">
+              {data?.real_starting_datetime?.seconds ? (
+                <>
+                  {getFormattedHour(
+                    new Timestamp(
+                      data?.real_starting_datetime?.seconds,
+                      data?.real_starting_datetime?.nanoseconds
+                    ).toDate()
+                  )}{" "}
+                  ~{" "}
+                  {getFormattedHour(
+                    new Timestamp(
+                      data?.real_ending_datetime?.seconds,
+                      data?.real_ending_datetime?.nanoseconds
+                    ).toDate()
+                  )}
+                </>
+              ) : (
+                <Text className="text-red-700 font-extrabold ">
+                  You are not present
+                </Text>
+              )}
+            </Text>
+          )}
         </View>
 
-        <View className="flex-1 justify-end">
-          {!isPresentToWork && (
-            <Pressable
-              onPress={() => {
-                if (
-                  new Date() <
-                  new Timestamp(
-                    data?.expected_starting_datetime.seconds,
-                    data?.expected_starting_datetime.nanoseconds
-                  ).toDate()
-                ) {
-                  alert("Not the time yet");
-                  return;
-                }
-                setShowDialog(true);
-              }}
-            >
-              <Text>簽到</Text>
-            </Pressable>
-          )}
-          {isPresentToWork && !hasCompletedJob && (
-            <Pressable onPress={() => setShowDialog(true)}>
-              <Text>我完成了</Text>
-            </Pressable>
-          )}
-          {hasCompletedJob && (
-            <Pressable>
-              <Text>已完成</Text>
-            </Pressable>
-          )}
-        </View>
+        {!item.isDateExpired && (
+          <View className="flex-1 justify-end">
+            {!isPresentToWork && (
+              <Pressable
+                onPress={() => {
+                  if (
+                    new Date() <
+                    new Timestamp(
+                      data?.expected_starting_datetime?.seconds,
+                      data?.expected_starting_datetime?.nanoseconds
+                    ).toDate()
+                  ) {
+                    alert("Not the time yet");
+                    return;
+                  } else if (!item.isAboard) {
+                    alert("You are not aboard");
+                    return;
+                  }
+                  setShowDialog(true);
+                }}
+              >
+                <Text className=" text-right"> 簽到</Text>
+              </Pressable>
+            )}
+            {isPresentToWork && !hasCompletedJob && (
+              <Pressable onPress={() => setShowDialog(true)}>
+                <Text className="text-blue-500 text-right"> 我完成了</Text>
+              </Pressable>
+            )}
+            {hasCompletedJob && (
+              <Pressable>
+                <Text className="text-green-500 text-right"> 已完成</Text>
+              </Pressable>
+            )}
+          </View>
+        )}
       </Pressable>
       <View>
         <InputPasswordPaper

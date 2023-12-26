@@ -67,11 +67,6 @@ const Auth = () => {
 
       await sendEmailVerification(userCredential.user);
       alert("Sent verification email, please verify your email to sign in");
-
-      await AsyncStorage.setItem("email", data.email.trim());
-      await AsyncStorage.setItem("password", data.password);
-      await AsyncStorage.setItem("username", data.username);
-      await AsyncStorage.setItem("userId", userCredential.user.uid);
     } catch (err) {
       console.log(err);
       alert(err);

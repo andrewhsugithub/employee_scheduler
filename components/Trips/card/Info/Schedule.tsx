@@ -16,7 +16,9 @@ interface JobId {
   id: string;
   password: string;
   tripId: string;
-  days: any;
+  isDateExpired: boolean;
+  crewId: string;
+  isAboard: boolean;
 }
 
 interface JobTimeInfo {
@@ -56,15 +58,20 @@ interface ScheduleProps {
 }
 
 const Schedule = ({ trip, crewId, tripId }: ScheduleProps) => {
+  console.log("crew:", crewId);
   const [correctPassword, setCorrectPassword] = useState("");
   const [showDialog, setShowDialog] = useState(false);
   const [passwordValid, setPasswordValid] = useState(false);
-
-  const { currentAuth: auth } = useGetCollectionContext();
+  // const auth = getAuth().currentUser;
   const [jobEvent, setJobEvent] = useState<JobTimeInfo[]>([]);
   const [tripDates, setTripDates] = useState<Record<string, MarkedDates>>({});
   //const [aboard, setAboard] = useState(false);
-  const [isVerified, setVerified] = useState(false);
+  const [isVerified, setVerified] = useState(
+    crewId === trip?.captain_id
+      ? trip?.has_captain_verfied
+      : trip?.crew[trip?.crew.findIndex((crew: any) => crew.crew_id === crewId)]
+          ?.has_crew_verified
+  );
   const currentDate: Date = new Date();
   const endDate: Date = new Date(
     new Timestamp(trip?.end_date.seconds, trip?.end_date.nanoseconds).toDate()
@@ -73,7 +80,7 @@ const Schedule = ({ trip, crewId, tripId }: ScheduleProps) => {
   const { isConnected } = useCheckConnectionContext();
   const theme = useRef(getTheme());
   const password =
-    auth?.uid === trip?.captain_id
+    crewId === trip?.captain_id
       ? trip?.captain_pass
       : trip?.crew[trip?.crew.findIndex((crew: any) => crew.crew_id === crewId)]
           ?.crew_pass;
@@ -215,7 +222,9 @@ const Schedule = ({ trip, crewId, tripId }: ScheduleProps) => {
         id: job?.id,
         password: password,
         tripId: tripId,
-        days: job?.days,
+        crewId: crewId!,
+        isDateExpired: isDateExpired,
+        isAboard: isAboard,
       });
     });
 
@@ -225,35 +234,45 @@ const Schedule = ({ trip, crewId, tripId }: ScheduleProps) => {
         data:
           jobEvents[dateString].length > 0
             ? jobEvents[dateString]
-            : [{ password: password, tripId: tripId }],
+            : [
+                {
+                  password: password,
+                  tripId: tripId,
+                  crewId: crewId!,
+                  isDateExpired: isDateExpired,
+                  isAboard: isAboard,
+                },
+              ],
       }))
     );
   }, [trip]);
 
   // get aboard status
   useEffect(() => {
+    console.log("change aboard status");
     const aboard =
-      auth?.uid === trip?.captain_id
+      crewId === trip?.captain_id
         ? trip?.captain_aboard_time
         : trip?.crew[
             trip?.crew.findIndex((crew: any) => crew.crew_id === crewId)
           ]?.crew_aboard_time;
 
     const offboard =
-      auth?.uid === trip?.captain_id
+      crewId === trip?.captain_id
         ? trip?.captain_offboard_time
         : trip?.crew[
             trip?.crew.findIndex((crew: any) => crew.crew_id === crewId)
           ]?.crew_offboard_time;
     setIsAboard(aboard === null ? false : true);
     setIsOffboard(offboard === null ? false : true);
-  }, [trip]);
+  }, [trip, crewId]);
 
   const handleAboard = async () => {
+    setIsAboard(true);
     const docRef = doc(db, "trips", tripId);
     const aboardDate = new Date();
     const updatedFields =
-      auth?.uid === trip?.captain_id
+      crewId === trip?.captain_id
         ? { captain_aboard_time: aboardDate }
         : {
             crew: trip?.crew.map((crew: any) =>
@@ -268,7 +287,7 @@ const Schedule = ({ trip, crewId, tripId }: ScheduleProps) => {
     const tripDoc = await AsyncStorage.getItem("trips_" + tripId);
     const parsedTrip = JSON.parse(tripDoc!);
     const newTrip =
-      auth?.uid === trip?.captain_id
+      crewId === trip?.captain_id
         ? { ...parsedTrip, captain_aboard_time: aboardDate }
         : {
             ...parsedTrip,
@@ -282,10 +301,11 @@ const Schedule = ({ trip, crewId, tripId }: ScheduleProps) => {
   };
 
   const handleOffboard = async () => {
+    setIsOffboard(true);
     const docRef = doc(db, "trips", tripId);
     const offboardDate = new Date();
     const updatedFields =
-      auth?.uid === trip?.captain_id
+      crewId === trip?.captain_id
         ? { captain_offboard_time: offboardDate }
         : {
             crew: trip?.crew.map((crew: any) =>
@@ -300,13 +320,44 @@ const Schedule = ({ trip, crewId, tripId }: ScheduleProps) => {
     const tripDoc = await AsyncStorage.getItem("trips_" + tripId);
     const parsedTrip = JSON.parse(tripDoc!);
     const newTrip =
-      auth?.uid === trip?.captain_id
+      crewId === trip?.captain_id
         ? { ...parsedTrip, captain_offboard_time: offboardDate }
         : {
             ...parsedTrip,
             crew: parsedTrip?.crew.map((crew: any) =>
               crew.crew_id === crewId
                 ? { ...crew, crew_offboard_time: offboardDate }
+                : crew
+            ),
+          };
+    await AsyncStorage.setItem("trips_" + tripId, JSON.stringify(newTrip));
+  };
+
+  const handleVerify = async () => {
+    const tripRef = doc(db, "trips", tripId);
+    const updatedFields =
+      crewId === trip?.captain_id
+        ? { has_captain_verfied: true }
+        : {
+            crew: trip?.crew.map((crew: any) =>
+              crew.crew_id === crewId
+                ? { ...crew, has_crew_verified: true }
+                : crew
+            ),
+          };
+    await updateDoc(tripRef, updatedFields);
+
+    // local update
+    const tripDoc = await AsyncStorage.getItem("trips_" + tripId);
+    const parsedTrip = JSON.parse(tripDoc!);
+    const newTrip =
+      crewId === trip?.captain_id
+        ? { ...parsedTrip, has_captain_verfied: true }
+        : {
+            ...parsedTrip,
+            crew: parsedTrip?.crew.map((crew: any) =>
+              crew.crew_id === crewId
+                ? { ...crew, has_crew_verified: true }
                 : crew
             ),
           };
@@ -370,24 +421,13 @@ const Schedule = ({ trip, crewId, tripId }: ScheduleProps) => {
             // onDayPress={onDayPress}
           />
           <View className="flex items-center justify-center">
-            {isDateExpired ? ( //verify 顯示在history的tripinfo裡
+            {isDateExpired || isOffboard ? ( //verify 顯示在history的tripinfo裡
               <Pressable
-                className={`bg-teal-500 rounded-3xl p-3 ${
-                  new Timestamp(
-                    trip?.start_date.seconds,
-                    trip?.start_date.nanoseconds
-                  ).toDate() >= new Date() ||
-                  new Timestamp(
-                    trip?.end_date.seconds,
-                    trip?.end_date.nanoseconds
-                  ).toDate() <= new Date()
-                    ? "opacity-60"
-                    : ""
-                }`}
-                onPress={() => setVerified(!isVerified)} //功能還沒設計
+                className={`bg-teal-500 rounded-3xl p-3`}
+                onPress={() => setShowDialog(true)} //功能還沒設計
               >
                 <Text className="text-2xl font-bold text-center dark:text-white">
-                  {isVerified ? "verified" : "verify"}
+                  {isVerified ? "VERIFIED" : "VERIFY"}
                 </Text>
               </Pressable>
             ) : (
@@ -402,6 +442,12 @@ const Schedule = ({ trip, crewId, tripId }: ScheduleProps) => {
                         trip?.start_date.nanoseconds
                       ).toDate() > new Date() && "opacity-60"
                     }`}
+                    disabled={
+                      new Timestamp(
+                        trip?.start_date.seconds,
+                        trip?.start_date.nanoseconds
+                      ).toDate() > new Date()
+                    }
                   >
                     <Text className="text-2xl font-bold text-center dark:text-white">
                       Aboard
@@ -415,20 +461,6 @@ const Schedule = ({ trip, crewId, tripId }: ScheduleProps) => {
                   >
                     <Text className="text-2xl font-bold text-center dark:text-white">
                       Offboard
-                    </Text>
-                  </Pressable>
-                )}
-                {isOffboard && (
-                  <Pressable
-                    className={`bg-teal-500 rounded-3xl p-3 ${
-                      new Timestamp(
-                        trip?.end_date.seconds,
-                        trip?.end_date.nanoseconds
-                      ).toDate() < new Date() && "opacity-60"
-                    }`}
-                  >
-                    <Text className="text-2xl font-bold text-center dark:text-white">
-                      Finished
                     </Text>
                   </Pressable>
                 )}
@@ -452,9 +484,12 @@ const Schedule = ({ trip, crewId, tripId }: ScheduleProps) => {
           handleAfterConfirm={
             !isAboard
               ? async () => await handleAboard()
-              : async () => await handleOffboard()
+              : !isOffboard
+              ? async () => await handleOffboard()
+              : async () => await handleVerify()
           }
         />
+        {/**  */}
       </View>
     </>
   );

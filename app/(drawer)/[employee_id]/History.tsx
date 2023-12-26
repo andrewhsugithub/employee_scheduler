@@ -13,9 +13,11 @@ import { styled } from "nativewind";
 import AddTripButton from "@/components/trips/AddTripButton";
 import TripCard from "@/components/trips/card/TripCard";
 import { useEffect, useState, useCallback } from "react";
-import { Timestamp, doc } from "firebase/firestore";
+import { Timestamp, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import RegisterTrip from "@/components/trips/RegisterTrip";
 import { useGetCollectionContext } from "@/context/getCollectionContext";
+import { db } from "@/lib/firebase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface Trip {
   id: string;
@@ -29,9 +31,13 @@ const History = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [pastTrips, setPastTrips] = useState<string[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [loadHistory, setIsLoadHistory] = useState(false);
 
-  const { userLoading: loading, currentUserData: data } =
-    useGetCollectionContext();
+  const {
+    userLoading: loading,
+    currentUserData: data,
+    currentAuth,
+  } = useGetCollectionContext();
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -40,6 +46,10 @@ const History = () => {
     }, 2000);
   }, []);
   useEffect(() => {
+    setIsLoadHistory(true);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const tooOldTrips: string[] = [];
     setPastTrips(
       data?.trips
         ?.filter(
@@ -53,8 +63,47 @@ const History = () => {
               trip.end_date.nanoseconds
             ).toDate() < new Date()
         )
-        .map((trip: any) => trip.id)
+        .map((trip: any) => {
+          if (
+            thirtyDaysAgo.getTime() >
+            new Timestamp(trip.end_date.seconds, trip.end_date.nanoseconds)
+              .toDate()
+              .getTime()
+          ) {
+            tooOldTrips.push(trip.id);
+          }
+          return trip.id;
+        })
     );
+    const updateNewTrips = async (tooOldTrips: string[]) => {
+      await updateDoc(doc(db, "users", currentAuth?.uid!), {
+        trips: data?.trips.filter(
+          (trip: any) => !tooOldTrips.includes(trip.id)
+        ),
+      });
+      const userRef = await AsyncStorage.getItem("users_" + currentAuth?.uid!);
+      const user = JSON.parse(userRef!);
+      await AsyncStorage.setItem(
+        "users_" + currentAuth?.uid!,
+        JSON.stringify({
+          ...user,
+          trips: data?.trips.filter(
+            (trip: any) => !tooOldTrips.includes(trip.id)
+          ),
+        })
+      );
+      setIsLoadHistory(false);
+    };
+
+    if (tooOldTrips.length !== 0) {
+      Promise.all(
+        tooOldTrips.map(async (trip: any) => {
+          await deleteDoc(doc(db, "trips", trip.id));
+          await AsyncStorage.removeItem("trips_" + trip.id);
+        })
+      );
+      updateNewTrips(tooOldTrips);
+    } else setIsLoadHistory(false);
   }, [data]);
 
   return (
@@ -73,7 +122,7 @@ const History = () => {
               History:{" "}
             </Text>
           </View>
-          {loading ? (
+          {loading || loadHistory ? (
             <ActivityIndicator />
           ) : (
             <View className="flex-row flex-wrap items-start justify-start">

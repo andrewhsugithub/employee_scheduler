@@ -58,8 +58,8 @@ const RegisterTrip = ({ show, handleShow }: RegisterTripProps) => {
       expected_starting_datetime: jobData.startDate,
       expected_ending_datetime: jobData.endDate,
       job_name: jobData.jobName,
-      real_starting_datetime: jobData.startDate,
-      real_ending_datetime: jobData.endDate,
+      real_starting_datetime: null,
+      real_ending_datetime: null,
       is_present: false,
       is_late: true, // if >10min=>late
       has_complete_job: false,
@@ -106,7 +106,7 @@ const RegisterTrip = ({ show, handleShow }: RegisterTripProps) => {
           crew_pass: Math.random().toString(36).slice(-8),
           crew_aboard_time: null,
           crew_offboard_time: null,
-          days: [],
+          has_crew_verified: false,
         };
       })
     );
@@ -118,10 +118,10 @@ const RegisterTrip = ({ show, handleShow }: RegisterTripProps) => {
         allUsers![allUsers!.findIndex((user: User) => user.id === captainId!)]
           ?.name,
       captain_job: captainJobInfo,
+      has_captain_verfied: false,
       captain_pass: Math.random().toString(36).slice(-8),
       captain_aboard_time: null,
       captain_offboard_time: null,
-      captain_days: [],
       location: data.location,
       start_date: data.startDate,
       end_date: data.endDate,

@@ -10,9 +10,10 @@ import {
   View,
   useColorScheme,
   Modal,
+  ScrollView,
 } from "react-native";
 import * as ScreenOrientation from "expo-screen-orientation";
-import { Feather, MaterialIcons } from "@expo/vector-icons";
+import { Feather, MaterialIcons, AntDesign } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import DrawerContent from "@/components/drawer/DrawerContent";
 import { getAuth, signOut } from "firebase/auth";
@@ -20,6 +21,7 @@ import { Badge } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GetCollectionProvider } from "@/context/getCollectionContext";
 import Toast from "react-native-toast-message";
+
 import { List } from "react-native-paper";
 
 export default function DrawerLayout() {
@@ -59,7 +61,6 @@ export default function DrawerLayout() {
       setOrientation(e.orientationInfo.orientation);
       if (e.orientationInfo.orientation < 3) {
         setDrawerStatus("closed");
-        console.log("hi");
         navigate.dispatch(DrawerActions.closeDrawer());
       }
       console.log(e.orientationInfo.orientation);
@@ -107,7 +108,7 @@ export default function DrawerLayout() {
   };
 
   const handleNotificationInbox = () => {
-    setShowNotification(!setShowNotification);
+    setShowNotification(!ShowNotification);
   };
 
   return (
@@ -128,7 +129,7 @@ export default function DrawerLayout() {
           ),
           headerRight: () => (
             <View className="flex flex-row">
-              <Pressable
+              {/*<Pressable
                 className="m-2"
                 onPress={() => handleNotificationInbox()}
               >
@@ -138,16 +139,39 @@ export default function DrawerLayout() {
                   color={`${colorScheme === "dark" ? "white" : "black"}`}
                 />
                 <Badge size={10} className="absolute z-40" />
-              </Pressable>
-              <List.Section
-                title="Notification"
+              </Pressable>*/}
+              {/*<List.Section
+                title={"Notify"}
                 className="z-50"
                 titleStyle={{
                   color: `${colorScheme === "dark" ? "white" : ""}`,
                 }}
+              >*/}
+              {/*<List.Accordion
+                title=""
+                left={(props) => (
+                  <AntDesign name="bells" size={24} color="black" />
+                )}
+                expanded={ShowNotification}
+                onPress={handleNotificationInbox}
+                style={{ width: 60 }}
               >
-                <></>
-              </List.Section>
+                <View className="">
+                  <ScrollView>
+                    {NotificationMessage.map((str) => (
+                      <List.Item
+                        key={str}
+                        title={str}
+                        titleNumberOfLines={10}
+                        onPress={handleNotificationInbox}
+                        style={{ position: "relative" }}
+                        className="bg-white w-100"
+                      />
+                    ))}
+                  </ScrollView>
+                </View>
+                    </List.Accordion>*/}
+              {/*</List.Section>*/}
               <Pressable className="m-2" onPress={handleLogout}>
                 <Feather
                   name="log-out"
@@ -169,13 +193,6 @@ export default function DrawerLayout() {
           }}
         />
         <Drawer.Screen
-          name="[employee_id]/AcceptTrips"
-          options={{
-            drawerLabel: "Accept",
-            title: "Accept Trips Page",
-          }}
-        />
-        <Drawer.Screen
           name="[employee_id]/History"
           options={{
             drawerLabel: "History",
@@ -190,7 +207,7 @@ export default function DrawerLayout() {
           }}
         />
       </Drawer>
-      <Toast />
+      <Toast position="top" />
     </GetCollectionProvider>
   );
 }

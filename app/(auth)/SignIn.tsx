@@ -15,11 +15,7 @@ import {
 } from "@/lib/validations/signInSchema";
 import { Controller, set, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  getAuth,
-  setPersistence,
-  signInWithEmailAndPassword,
-} from "firebase/auth";
+import { setPersistence, signInWithEmailAndPassword } from "firebase/auth";
 import { useEffect, useState } from "react";
 import * as LocalAuthentication from "expo-local-authentication";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -51,10 +47,35 @@ const SignIn = () => {
     setIsAuthenticated(localAuth.success);
 
     if (!localAuth.success) return;
+
     const localUser = await AsyncStorage.getItem("currentUser");
     const user = JSON.parse(localUser!);
-    if (user) router.push(`/(drawer)/${user.displayName}/MyTrips`);
-    console.log("user: ", user);
+    const authEmail = user?.email;
+    const authPass = await AsyncStorage.getItem("password");
+
+    await signInWithEmailAndPassword(auth, authEmail, authPass!)
+      .then(async (userCredential) => {
+        const user = userCredential.user;
+        if (!user.emailVerified) alert("Please verify your email first");
+        else {
+          await AsyncStorage.clear();
+          await AsyncStorage.setItem("email", authEmail);
+          await AsyncStorage.setItem("password", authPass!);
+          await AsyncStorage.setItem(
+            "username",
+            userCredential?.user?.displayName!
+          );
+          await AsyncStorage.setItem("userId", userCredential.user.uid);
+          await AsyncStorage.setItem("currentUser", JSON.stringify(user));
+          router.push(`/(drawer)/${user.displayName}/MyTrips`);
+          return;
+        }
+      })
+      .catch((err) => {
+        console.log("user: ", user);
+        if (user) router.push(`/(drawer)/${user.displayName}/MyTrips`);
+        console.log("user: ", user);
+      });
   }
 
   useEffect(() => {
@@ -74,6 +95,31 @@ const SignIn = () => {
     const displayName = currentUser?.displayName;
     const authEmail = currentUser?.email;
 
+    await signInWithEmailAndPassword(
+      auth,
+      data.email.trim(),
+      data.password
+    ).then(async (userCredential) => {
+      const user = userCredential.user;
+      if (!user.emailVerified) alert("Please verify your email first");
+      else {
+        await AsyncStorage.clear();
+        await AsyncStorage.setItem("email", data.email.trim());
+        await AsyncStorage.setItem("password", data.password);
+        await AsyncStorage.setItem(
+          "username",
+          userCredential?.user?.displayName!
+        );
+        await AsyncStorage.setItem("userId", userCredential.user.uid);
+        await AsyncStorage.setItem("currentUser", JSON.stringify(user));
+        router.push(`/(drawer)/${user.displayName}/MyTrips`);
+        return;
+      }
+    });
+    // .catch((err) => {
+    //   alert(err);
+    // });
+
     if (
       !isConnected &&
       authEmail === data.email.trim() &&
@@ -82,21 +128,6 @@ const SignIn = () => {
       router.push(`/(drawer)/${displayName}/MyTrips`);
       return;
     }
-
-    await signInWithEmailAndPassword(auth, data.email.trim(), data.password)
-      .then(async (userCredential) => {
-        const user = userCredential.user;
-        if (!user.emailVerified) alert("Please verify your email first");
-        else {
-          await AsyncStorage.setItem("email", data.email.trim());
-          await AsyncStorage.setItem("password", data.password);
-          await AsyncStorage.setItem("username", user!.displayName!);
-          router.push(`/(drawer)/${user.displayName}/MyTrips`);
-        }
-      })
-      .catch((err) => {
-        alert(err);
-      });
   };
 
   const {

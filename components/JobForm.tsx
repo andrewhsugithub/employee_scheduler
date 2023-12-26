@@ -84,9 +84,11 @@ const JobForm = <T extends FieldValues>({
 
             <Pressable
               onPress={() => remove(index)}
-              className="mt-3 py-1 p-3 bg-red-400 rounded-full"
+              className="mt-3 py-1 p-3 bg-red-600 rounded-full"
             >
-              <Text className="text-center">Delete Job</Text>
+              <Text className="text-center text-white font-extrabold">
+                Delete Job
+              </Text>
             </Pressable>
           </View>
         ))}
@@ -101,9 +103,9 @@ const JobForm = <T extends FieldValues>({
               endDate: new Date(),
             } as FieldArray<T, ArrayPath<T>> | FieldArray<T, ArrayPath<T>>[])
           }
-          className="mt-2 py-1 p-3 bg-blue-300 rounded-full"
+          className="mt-2 py-1 p-3 bg-green-500 rounded-full"
         >
-          <Text className="text-center">Add Job</Text>
+          <Text className="text-center text-white ">Add Job</Text>
         </Pressable>
       </View>
     </View>

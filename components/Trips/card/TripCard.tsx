@@ -18,6 +18,7 @@ import useFetch from "@/hooks/useFetch";
 import { useGetCollectionContext } from "@/context/getCollectionContext";
 import Toast from "react-native-toast-message";
 import PassForTrip from "../ongoing/PassForTrip";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -89,7 +90,7 @@ const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
   useEffect(() => {
     if (loadTrip || Object.keys(tripData!).length === 0) return;
 
-    // console.log("tripData:", tripData, tripId!);
+    console.log("tripData:", tripData, tripId!);
 
     setCrew([
       {
@@ -131,31 +132,52 @@ const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
   const showToast = (person: string) => {
     Toast.show({
       type: "error",
-      text1: "Overtime",
+      text1: "⚠️Overtime",
       text2: person + " worked overtime ( >14hr )👋",
-      position: "bottom",
     });
+    console.log("person: ", person, "show toast");
   };
 
+  //! days
   useEffect(() => {
-    if (!isOngoing) {
-      // interval of 30 minutes
-      setInterval(() => {
-        tripData?.crew?.map((crew: any) => {
-          crew?.crew_jobs?.map((job: any) => {
-            for (const [key, value] of Object.entries(job?.days)) {
-              if ((value as number) > 14) showToast("crew"); //! add notification
+    if (loadTrip) return;
+    console.log("isOngoing: ", isOngoing);
+    // interval of 30 minutes
+    const timeId = setInterval(async () => {
+      if (!isOngoing) return;
+      if (tripData?.crew) {
+        Promise.all(
+          tripData?.crew?.map(async (crew: any) => {
+            const userRef = await AsyncStorage.getItem(
+              "users_" + crew?.crew_id
+            );
+            const user = JSON.parse(userRef!);
+            // Check if any day has more than 14 hours
+            if (user?.days) {
+              for (const hours of Object.values(user?.days)) {
+                if ((hours as number) >= 14) {
+                  showToast(user?.name);
+                }
+              }
             }
-          });
-        });
-        tripData?.captain_job?.map((job: any) => {
-          for (const [key, value] of Object.entries(job?.days)) {
-            if ((value as number) > 14) showToast("captain"); //! add notification
+          })
+        );
+      }
+      const captainRef = await AsyncStorage.getItem(
+        "users_" + tripData?.captain_id
+      );
+      const captain = JSON.parse(captainRef!);
+      // Check if any day has more than 14 hours
+      if (captain?.days) {
+        for (const hours of Object.values(captain?.days)) {
+          if ((hours as number) >= 1) {
+            showToast(captain?.name);
           }
-        });
-      }, 1000 * 60 * 30);
-    }
-  }, [isOngoing]);
+        }
+      }
+    }, 1000 * 10); // millisecond
+    return () => clearInterval(timeId);
+  }, [isOngoing, tripData, loadTrip]);
 
   if (!loadTrip && Object.keys(tripData!).length === 0) return; //! here add a dialog say that need wifi connection
 
@@ -228,17 +250,15 @@ const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
           tripId={tripId!}
         />
       )}
-      {isOngoing && (
+      {showPassForTripPage && (
+        <PassForTrip
+          show={showPassForTripPage}
+          handleShow={(showModal: boolean) => setShowPassForTripPage(showModal)}
+          password={crewPass}
+        />
+      )}
+      {/* {isOngoing && (
         <>
-          {showPassForTripPage && (
-            <PassForTrip
-              show={showPassForTripPage}
-              handleShow={(showModal: boolean) =>
-                setShowPassForTripPage(showModal)
-              }
-              password={crewPass}
-            />
-          )}
           {showDetails && (
             <Table
               show={showDetails}
@@ -247,8 +267,8 @@ const TripCard = ({ tripId, isOngoing }: TripCardProps) => {
             />
           )}
         </>
-      )}
-      {showEdit && <RegisterTrip show={showEdit} handleShow={setShowEdit} />}
+      )} */}
+      {/* {showEdit && <RegisterTrip show={showEdit} handleShow={setShowEdit} />} */}
     </>
   );
 };

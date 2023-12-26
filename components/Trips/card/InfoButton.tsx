@@ -37,17 +37,18 @@ const InfoButton = ({
               <Entypo name="info-with-circle" size={15} color="white" />
             </View>
           </Pressable>
+
+          <Pressable
+            onPress={() => handleShowRollCall(true)}
+            className={"border-b-2 border-b-white"}
+          >
+            <View className="flex flex-row justify-between items-center m-2 mr-4">
+              <Text className="text-white w-full">Trip Pass</Text>
+              <Entypo name="info-with-circle" size={15} color="white" />
+            </View>
+          </Pressable>
           {isOngoing && (
             <>
-              <Pressable
-                onPress={() => handleShowRollCall(true)}
-                className={"border-b-2 border-b-white"}
-              >
-                <View className="flex flex-row justify-between items-center m-2 mr-4">
-                  <Text className="text-white w-full">Roll Call</Text>
-                  <Entypo name="info-with-circle" size={15} color="white" />
-                </View>
-              </Pressable>
               <Pressable
                 onPress={() => handleShowDetails(true)}
                 className={"border-b-2 border-b-white"}
@@ -59,7 +60,7 @@ const InfoButton = ({
               </Pressable>
             </>
           )}
-          <Pressable
+          {/* <Pressable
             onPress={() => handleShowEdit(true)}
             className={"border-b-2 border-b-white"}
           >
@@ -67,7 +68,7 @@ const InfoButton = ({
               <Text className="text-white w-full">Edit</Text>
               <Entypo name="info-with-circle" size={15} color="white" />
             </View>
-          </Pressable>
+          </Pressable> */}
         </View>
       )}
     </>

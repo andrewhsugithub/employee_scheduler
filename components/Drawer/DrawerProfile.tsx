@@ -1,4 +1,5 @@
-﻿import { useLocalSearchParams, useRouter } from "expo-router";
+﻿import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { getAuth, signOut } from "firebase/auth";
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
@@ -11,6 +12,7 @@ const DrawerProfile = () => {
 
   const handleLogout = async () => {
     await signOut(auth);
+    await AsyncStorage.clear();
     router.push("/(auth)/SignIn");
   };
 

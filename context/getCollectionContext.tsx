@@ -40,11 +40,13 @@ export const GetCollectionProvider = ({
   const { isConnected } = useCheckConnectionContext();
   const [currentAuth, setCurrentAuth] = useState<AuthUser>({} as AuthUser);
   const [authLoading, setAuthLoading] = useState(true);
-  const auth = getAuth().currentUser;
+  // const auth = getAuth().currentUser;
   useEffect(() => {
     const localAuth = async () => {
-      await AsyncStorage.setItem("currentUser", JSON.stringify(auth));
-      setCurrentAuth(auth!);
+      // await AsyncStorage.setItem("currentUser", JSON.stringify(auth));
+      const localAuth = await AsyncStorage.getItem("currentUser");
+      const auth = JSON.parse(localAuth!);
+      setCurrentAuth(auth);
       setAuthLoading(false);
     };
     if (!isConnected) return; // if connected => return
@@ -68,8 +70,12 @@ export const GetCollectionProvider = ({
 
   const updateLocalUsers = async (snapshot: DocumentData) => {
     let allUsers: User[] = [];
-    snapshot?.forEach((user: any) => {
+    snapshot?.forEach(async (user: any) => {
       allUsers.push({ id: user.id, name: user.data().name });
+      await AsyncStorage.setItem(
+        "users_" + user.id,
+        JSON.stringify(user.data())
+      );
     });
     // console.log("allUsers: ", allUsers);
     await AsyncStorage.setItem("allUsers", JSON.stringify(allUsers));
@@ -77,7 +83,7 @@ export const GetCollectionProvider = ({
   };
 
   const updateCurrentLocalUser = async (userData: DocumentData) => {
-    await AsyncStorage.setItem(auth?.uid!, JSON.stringify(userData));
+    await AsyncStorage.setItem(currentAuth?.uid!, JSON.stringify(userData));
     if (Object.keys(userData.trips).length === 0) return;
     let tripList: Record<string, any> = {};
     Promise.all(
@@ -101,7 +107,7 @@ export const GetCollectionProvider = ({
 
         usersSnapshot?.forEach((user: any) => {
           userList.push({ id: user.id, name: user.data()?.name });
-          if (user.id === auth?.uid) {
+          if (user.id === currentAuth?.uid) {
             setCurrentUserData(user.data());
             updateCurrentLocalUser(user.data());
           }
@@ -112,7 +118,7 @@ export const GetCollectionProvider = ({
     );
 
     return () => unsubscribe();
-  }, []);
+  }, [currentAuth]);
 
   // TODO: hopefully there is a better way than to get all job ids
   const updateLocalJobs = async (
@@ -135,12 +141,12 @@ export const GetCollectionProvider = ({
       ref,
       { includeMetadataChanges: true },
       (jobsSnapshot) => {
-        console.log("jobsSnapshot:", jobsSnapshot);
+        // console.log("jobsSnapshot:", jobsSnapshot);
         updateLocalJobs(jobsSnapshot);
       }
     );
     return () => unsubscribe();
-  }, []);
+  }, [currentAuth]);
 
   //! no wifi => get local user collection
   useEffect(() => {
@@ -165,7 +171,7 @@ export const GetCollectionProvider = ({
     if (isConnected) return;
     console.log("not supposed to be here if have wifi");
     getUsers();
-  }, []);
+  }, [currentAuth]);
 
   return (
     <GetCollectionContext.Provider
